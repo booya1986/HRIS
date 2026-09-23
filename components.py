@@ -132,3 +132,24 @@ def apply(h):
     for f in (stepper, calculator, option_tabs, weight, value_map, kpi_tabs, premortem):
         h = f(h)
     return h
+
+ILL = [
+ # (needle in h2/h3 text, file, hebrew caption, place: 'after-heading' | 'before-tbl' )
+ ("שלוש אופציות מבנה, מתפתחות", "stages.jpg", "שלושת השלבים. כל שלב מכיל את הקודם, והמעבר מותנה בנתונים נקיים ובערך מוכח."),
+ ("השכר הוא העוגן", "payroll-anchor.jpg", "הארכיטקטורה הישראלית הרווחת. ליבת HR גלובלית, ממשק, ומנוע שכר מקומי. הממשק הוא החוליה השבירה."),
+ ("נקודות עיוורות למי שמגיע מעולם הלמידה", "treadmill.jpg", "אין השקה. הספק משחרר גרסאות חובה פעמיים בשנה, וכל שחרור דורש רגרסיה."),
+ ("הכשל השקט, התאמת מצבה", "headcount.jpg", "HR וכספים סופרים אחרת ושניהם צודקים. מילון הגדרות משותף הוא הדבר הראשון שהיחידה כותבת."),
+ ("מי מרוויח, מי מפסיד", "queue.jpg", "תור הבקשות בולע צוותים קטנים. intake, SLA ובעלים מהיום הראשון."),
+]
+def illustrations(h):
+    import os
+    for needle, fn, cap in ILL:
+        if not os.path.exists(os.path.join("assets", fn)): continue
+        m = re.search(r'(<h[23] id="s\d+">[^<]*' + re.escape(needle) + r'[^<]*</h[23]>)', h)
+        if not m: continue
+        fig = f'<figure class="ill"><img src="assets/{fn}" alt="{html.escape(cap)}" loading="lazy"><figcaption>{cap}</figcaption></figure>'
+        h = h[:m.end()] + fig + h[m.end():]
+    return h
+_apply = apply
+def apply(h):
+    return illustrations(_apply(h))
