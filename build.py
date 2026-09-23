@@ -6,6 +6,7 @@ body = s[re.match(r"^---\n.*?\n---\n", s, re.S).end():]
 # drop the H1 (the page header carries it) and the trailing italics line
 body = re.sub(r"^# .*?\n", "", body.lstrip(), count=1)
 body = body.replace("\n\n> **ההקשר של המסמך.**", "\n\n<!-- -->\n\n> **ההקשר של המסמך.**")
+body = re.sub(r"\n> \*\*גרסה לשיתוף\.\*\*[^\n]*\n", "\n", body)
 pathlib.Path("body.md").write_text(body, encoding="utf-8")
 subprocess.run(["npx","--yes","marked","--gfm","-i","body.md","-o","body.html"], check=True)
 h = open("body.html", encoding="utf-8").read()
