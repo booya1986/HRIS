@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מה זה HRIS. תחומי אחריות, איך מקימים יחידה, ומה חשוב לדעת מראש</title>
+<meta name="description" content="מחקר מאומת על פונקציית HRIS, שלוש אופציות מבנה ליחידה חדשה, משקל פונקציית הדאטה, AI שמייצר ערך, מסגרת KPI, ונקודות עיוורות.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff; --paper:#ffffff; --ink:#111111; --ink-2:#333333; --muted:#6f7379; --line:#ebebeb;
+  --accent:#0a5c5c; --accent-2:#ff5a1f; --accent-soft:#eef7f6; --code:#f5f5f5;
+  --glass:rgba(255,255,255,.82); --shadow:0 12px 40px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.04);
+  --measure:46rem; --wide:74rem;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1012; --paper:#141518; --ink:#ededea; --ink-2:#c9c9c4; --muted:#9a9ea6; --line:#26282d;
+    --accent:#6cc9c2; --accent-2:#ff8a5c; --accent-soft:#10302e; --code:#1c1e23;
+    --glass:rgba(20,21,24,.72); --shadow:0 18px 50px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1012; --paper:#141518; --ink:#ededea; --ink-2:#c9c9c4; --muted:#9a9ea6; --line:#26282d;
+  --accent:#6cc9c2; --accent-2:#ff8a5c; --accent-soft:#10302e; --code:#1c1e23;
+  --glass:rgba(20,21,24,.72); --shadow:0 18px 50px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Heebo",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-size:18px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:3px}
+#bar{position:fixed;top:0;inset-inline:0;height:3px;background:var(--accent-2);transform-origin:right;transform:scaleX(0);z-index:50}
+
+/* hero */
+.hero{padding:88px 20px 56px;max-width:var(--wide);margin:0 auto}
+.kicker{display:flex;gap:14px;align-items:center;color:var(--muted);font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;font-weight:500}
+.kicker::before{content:"";width:34px;height:2px;background:var(--accent-2)}
+h1{font-size:clamp(2.2rem,5.4vw,4.4rem);line-height:1.08;margin:22px 0 22px;font-weight:900;letter-spacing:-.02em;max-width:22ch}
+.sub{color:var(--ink-2);max-width:var(--measure);font-size:1.2rem;line-height:1.65;margin:0;font-weight:300}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:44px 0 0;max-width:var(--wide)}
+.stat{padding:22px 22px 18px;border-top:2px solid var(--ink)}
+.stat b{display:block;font-size:2.4rem;font-weight:900;letter-spacing:-.02em;line-height:1;color:var(--accent)}
+.stat span{display:block;color:var(--muted);font-size:.92rem;margin-top:10px;line-height:1.45}
+.meta{display:flex;flex-wrap:wrap;gap:8px 26px;color:var(--muted);font-size:.86rem;margin-top:34px;padding-top:18px;border-top:1px solid var(--line)}
+
+/* layout */
+.page{max-width:var(--wide);margin:0 auto;padding:24px 20px 120px;display:grid;grid-template-columns:minmax(0,1fr) 17rem;gap:56px}
+main{min-width:0}
+article{max-width:none}
+article > :not(.tbl):not(.stepper):not(.opts):not(.vmap):not(.timeline):not(.pm):not(.calc):not(.weight){max-width:var(--measure)}
+.opts > .panel > :not(.tbl){max-width:var(--measure)}
+
+/* floating toc */
+.tocwrap{position:sticky;top:24px;align-self:start}
+nav.toc{background:var(--glass);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:14px 12px;font-size:.86rem}
+nav.toc .t{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:2px 6px 12px}
+nav.toc a{display:block;color:var(--ink-2);padding:6px 10px;border-radius:10px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+nav.toc a.l3{padding-inline-start:22px;font-size:.82rem;color:var(--muted)}
+nav.toc a:hover{background:var(--accent-soft);text-decoration:none}
+nav.toc a.on{background:var(--ink);color:var(--paper)}
+.tocbtn{display:none}
+
+/* type */
+h2{font-size:clamp(1.7rem,3vw,2.3rem);line-height:1.15;margin:3.2em 0 .8em;font-weight:900;letter-spacing:-.015em;position:relative;padding-top:1.1em}
+h2::before{content:"";position:absolute;top:0;inset-inline-start:0;width:56px;height:3px;background:var(--accent-2)}
+h2:first-of-type{margin-top:1.2em}
+h3{font-size:1.28rem;margin:2.2em 0 .6em;font-weight:800;line-height:1.3}
+p{margin:0 0 1.15em}
+ul,ol{padding-inline-start:1.35em;margin:0 0 1.2em}
+li{margin:.45em 0}
+li::marker{color:var(--accent-2);font-weight:700}
+strong{font-weight:700}
+hr{display:none}
+em{color:var(--muted);font-style:normal}
+blockquote.callout{margin:1.6em 0;padding:20px 24px;background:var(--code);border-inline-start:3px solid var(--accent);border-radius:14px}
+blockquote.callout p{margin:0}
+blockquote.callout + blockquote.callout{margin-top:-.6em}
+
+/* key insights as magazine list */
+article > ol:first-of-type{counter-reset:k;list-style:none;padding:0;margin:1.4em 0 2em}
+article > ol:first-of-type > li{counter-increment:k;position:relative;padding:18px 66px 18px 0;border-top:1px solid var(--line);margin:0}
+article > ol:first-of-type > li::before{content:counter(k,decimal-leading-zero);position:absolute;inset-inline-start:0;top:14px;font-size:1.6rem;font-weight:900;color:var(--accent-2);letter-spacing:-.03em}
+
+/* tables */
+.tbl{overflow-x:auto;margin:1.6em 0 2em;border:1px solid var(--line);border-radius:14px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:.93rem;direction:rtl;line-height:1.55}
+th,td{padding:12px 14px;text-align:right;vertical-align:top;border-bottom:1px solid var(--line);unicode-bidi:plaintext}
+th{background:var(--code);font-weight:800;font-size:.82rem;letter-spacing:.04em;position:sticky;top:0;color:var(--ink-2)}
+tr:last-child td{border-bottom:0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;background:var(--code);padding:.1em .4em;border-radius:6px}
+pre{background:var(--code);padding:18px;border-radius:14px;overflow:auto;direction:ltr;text-align:left;font-size:.85rem;line-height:1.5}
+
+.mermaid svg{max-width:100%;height:auto}
+
+/* components */
+.stepper{display:grid;grid-template-columns:1fr 11rem 1fr 11rem 1fr;gap:12px;align-items:stretch;margin:1.6em 0 2em}
+.step{font:inherit;text-align:right;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px 18px;cursor:pointer;transition:transform .15s,border-color .15s;color:var(--ink)}
+.step:hover{transform:translateY(-2px);border-color:var(--ink)}
+.step .n{display:block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-2);font-weight:700}
+.step b{display:block;font-size:1.1rem;font-weight:900;margin:4px 0 2px;line-height:1.2}
+.step small{display:block;color:var(--muted);font-size:.82rem;line-height:1.4}
+.stepper .cond{align-self:center;font-size:.78rem;color:var(--muted);text-align:center;line-height:1.35;position:relative;padding-top:18px}
+.stepper .cond::before{content:"←";position:absolute;top:-4px;inset-inline:0;text-align:center;color:var(--accent-2);font-weight:900;font-size:1.1rem}
+.tabbar{display:flex;gap:8px;flex-wrap:wrap;margin:1.4em 0 0;border-bottom:1px solid var(--line);padding-bottom:12px}
+.tab{font:inherit;text-align:right;background:transparent;border:1px solid var(--line);border-radius:14px;padding:10px 14px;cursor:pointer;color:var(--ink-2);flex:1 1 12rem;line-height:1.3}
+.tab span{display:block;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.tab b{display:block;font-weight:800;font-size:.98rem;color:var(--ink)}
+.tab small{display:block;color:var(--muted);font-size:.8rem}
+.tab.on{background:var(--ink);border-color:var(--ink)} .tab.on *{color:var(--paper)}
+.panel{display:none;padding-top:.6em} .panel.on{display:block}
+.panel > h3{margin-top:1.2em}
+.calc{margin:1.4em 0 1.8em;padding:20px 22px;border:1px solid var(--line);border-radius:16px;background:var(--paper)}
+.calc-h b{display:block;font-weight:800} .calc-h span{color:var(--muted);font-size:.86rem}
+.calc-row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;margin:16px 0}
+.calc-row label{font-size:.9rem;color:var(--ink-2)} .calc-row output{font-weight:900;font-size:1.2rem;min-width:5.5rem;text-align:left;direction:ltr;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.calc-out{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.calc-out div{border-top:2px solid var(--ink);padding:12px 4px 4px}
+.calc-out small{display:block;color:var(--muted);font-size:.8rem;line-height:1.35;min-height:2.6em}
+.calc-out b{display:block;font-size:2rem;font-weight:900;color:var(--accent);line-height:1.1;margin-top:6px}
+.calc-note{margin:14px 0 0;font-size:.86rem;color:var(--muted)}
+.weight{margin:1.4em 0 2em;padding:0}
+.weight figcaption{font-size:.84rem;color:var(--muted);margin-bottom:12px}
+.wrow{display:grid;grid-template-columns:15rem 1fr 11rem;gap:14px;align-items:center;margin:10px 0;font-size:.92rem}
+.wbar{height:14px;background:var(--code);border-radius:999px;overflow:hidden}
+.wbar i{display:block;height:100%;width:var(--w);background:var(--accent);border-radius:999px}
+.wrow b{font-weight:700;color:var(--ink-2)}
+.vmap{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:1.4em 0 2em}
+.vcol h4{margin:0 0 10px;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-2);font-weight:800;padding-bottom:8px;border-bottom:2px solid var(--ink)}
+.vcard{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;background:var(--paper);font-size:.9rem;line-height:1.55}
+.vcard b{display:block;font-weight:800;margin-bottom:6px;font-size:.96rem}
+.vcard p{margin:0 0 6px;color:var(--ink-2)}
+.vcard .vcond{color:var(--muted);font-size:.84rem;margin:0} .vcard .vcond span{font-weight:700;color:var(--accent)}
+.stagefilter{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:1.2em 0 0;font-size:.84rem;color:var(--muted)}
+.stagefilter button{font:inherit;font-size:.82rem;border:1px solid var(--line);background:transparent;border-radius:999px;padding:5px 12px;cursor:pointer;color:var(--ink-2)}
+.stagefilter button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.kpiwrap tr.dim td{opacity:.28}
+.timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:1.2em 0 2em;position:relative}
+.timeline::before{content:"";position:absolute;top:9px;inset-inline:0;height:2px;background:var(--line)}
+.tcard{position:relative;padding-top:26px;font-size:.9rem;line-height:1.55}
+.tcard .dot{position:absolute;top:2px;inset-inline-start:0;width:16px;height:16px;border-radius:50%;background:var(--accent-2);border:3px solid var(--paper);box-shadow:0 0 0 2px var(--accent-2)}
+.tcard b{display:block;font-weight:900;font-size:1.05rem;margin-bottom:6px} .tcard p{margin:0;color:var(--ink-2)}
+.pm{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:1.2em 0 1.6em}
+.pmcard{border:1px solid var(--line);border-radius:16px;padding:18px;font-size:.9rem;line-height:1.6;background:var(--paper)}
+.pmcard .n{display:block;font-size:1.5rem;font-weight:900;color:var(--accent-2);letter-spacing:-.03em}
+.pmcard b{display:block;font-weight:800;font-size:1rem;margin:4px 0 10px} .pmcard p{margin:0;color:var(--ink-2)}
+@media (max-width:980px){
+  .stepper{grid-template-columns:1fr} .stepper .cond{max-width:none;padding-top:22px}
+  .calc-out,.vmap,.timeline,.pm{grid-template-columns:1fr} .timeline::before{display:none}
+  .wrow{grid-template-columns:1fr;gap:6px}
+  .tab{flex:1 1 100%}
+}
+@media print{.panel{display:block} .tabbar,.stagefilter{display:none} .kpiwrap tr.dim td{opacity:1}}
+
+footer{max-width:var(--wide);margin:0 auto;padding:0 20px 70px;color:var(--muted);font-size:.86rem;border-top:1px solid var(--line);padding-top:26px}
+
+@media (max-width:980px){
+  .page{grid-template-columns:1fr;gap:0}
+  .tocwrap{position:fixed;bottom:22px;inset-inline:16px;top:auto;z-index:40}
+  nav.toc{display:none;margin-bottom:12px}
+  nav.toc.open{display:block}
+  .tocbtn{display:flex;align-items:center;gap:10px;margin-inline-start:auto;background:var(--ink);color:var(--paper);border:0;border-radius:999px;padding:12px 18px;font:inherit;font-size:.9rem;font-weight:700;box-shadow:var(--shadow);cursor:pointer}
+  .hero{padding:56px 18px 36px}
+  .stats{grid-template-columns:1fr;gap:6px}
+  .stat b{font-size:1.9rem}
+  body{font-size:17px}
+  .page{padding:12px 18px 140px}
+}
+@media print{
+  body{background:#fff;font-size:11pt} .tocwrap,#bar{display:none} .page{display:block;padding:0}
+  .tbl{overflow:visible;border:0;box-shadow:none} a{color:inherit} .stats{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<header class="hero">
+  <div class="kicker">מחקר מאומת · ספטמבר 2026</div>
+  <h1>מה זה HRIS. תחומי אחריות, איך מקימים יחידה, ומה חשוב לדעת מראש</h1>
+  <p class="sub">מה הפונקציה באמת עושה, איך מקימים אותה בעולם ובישראל, שלוש אופציות מבנה מתפתחות, משקל פונקציית הדאטה, איך יוצרים ערך אמיתי עם AI, מסגרת מדידה ליחידה, והדברים שמי שמגיע מעולם הלמידה לא רואה מראש.</p>
+  <div class="stats">
+    <div class="stat"><b>13%</b><span>מהטמעות טכנולוגיית HR עולות על הציפיות בהיבט כלשהו (Sapient דרך SHRM)</span></div>
+    <div class="stat"><b>1 : 2,500</b><span>איש People Analytics לכל עובדים, היחס שאליו התייצבו הצוותים ב-2025 (Insight222)</span></div>
+    <div class="stat"><b>68%</b><span>מה-CHROs מציינים יוזמות AI כעדיפות הראשונה ל-2026 (i4cp)</span></div>
+  </div>
+  <div class="meta">
+    <span>עשר עדשות חקירה, בדיקת עובדות אדוורסרית</span>
+    <span>כ-70 מקורות מדורגים, כל מספר עם רמת ביטחון</span>
+    <span>גנרי בכוונה, בלי שמות של מעסיק או מערכות פנימיות</span>
+  </div>
+</header>
+<div class="page">
+  <main><article>
+<blockquote class="callout">
+<p><strong>מילון קצר.</strong> <strong>HRIS</strong> היא מערכת הליבה של משאבי אנוש, המקום שבו רשומת העובד &quot;האמיתית&quot; חיה. <strong>HCM</strong> היא הסוויטה הרחבה שמעל, עם גיוס, ביצועים, למידה ותגמול. <strong>People Analytics</strong> הוא השימוש בדאטה של העובדים כדי לקבל החלטות, לא רק כדי להפיק דוחות. <strong>מערכת רשומה (System of Record)</strong> היא המערכת שכולם מסכימים שהיא הגרסה הנכונה של האמת. <strong>ממשל נתונים (Data Governance)</strong> הוא ההסכמה מי אחראי על כל שדה, מה ההגדרה שלו ומי רשאי לשנות אותו.</p>
+</blockquote>
+<!-- --><blockquote class="callout">
+<p><strong>ההקשר של המסמך.</strong> נכתב כהכנה לאפשרות שתתקבל האחריות על הקמת יחידת HRIS ודאטה חדשה בארגון, שהמנדט שלה הוא להעלות את הערך של משאבי אנוש לעסק. </p>
+</blockquote>
+<hr>
+<h2 id="s1">אמל״ק</h2>
+<p>יחידת HRIS היא לא &quot;צוות שמתחזק מערכת&quot;. היא הבעלים של רשומת העובד, של הממשקים בין HR לשכר, לכספים ול-IT, ושל האמינות של כל מספר שמשאבי אנוש מציגים להנהלה. בעולם, הכיוון הברור הוא לאחד את הטכנולוגיה של HR ואת הדאטה של HR ליחידה אחת, ולנהל אותה כמו מוצר ולא כמו מוקד תקלות. בישראל, השכר המקומי הוא העוגן שסביבו הכל מתארגן, ורגולציה חדשה (תיקון 13 לחוק הגנת הפרטיות, הוראה 364 של הפיקוח על הבנקים) הופכת את ממשל הנתונים מ&quot;נחמד שיש&quot; לחובה. פונקציית הדאטה מגיעה למשקל של יותר מחצי מהערך של היחידה, אבל רק אם היא בנויה על נתונים נקיים, ולכן שלב 1 (Core HRIS, מערכת רשומה אמינה) הוא תנאי לשלב 2 (HRIS + People Analytics) ולשלב 3 (Full-stack HR Tech, כל המחסנית כמוצר). ומה שה-CHRO כנראה מתכוון אליו כשהוא אומר &quot;ערך&quot; הוא HR שמוביל ב-AI, כך שאת שלב 1 צריך למכור כתשתית ה-AI ולא כהיגיינה. הסכנה הגדולה למי שמגיע מעולם הלמידה היא לחשוב שיש &quot;השקה&quot;. אין. יש תחזוקה קבועה של מערכת שהספק שובר לך פעמיים בשנה לפי לוח זמנים שלו.</p>
+<hr>
+<h2 id="s2">תובנות מפתח, הלא צפויות קודם</h2>
+<ol>
+<li><strong>רק 13% מהטמעות טכנולוגיית HR עולות על הציפיות בכל היבט שהוא</strong>, ורבע מהן מפספסות את לוח הזמנים (Sapient Insights דרך SHRM, סקר 2023–2024). ה&quot;עלייה לאוויר&quot; והמערכת שבאמת עובדת הן שתי אבני דרך שונות, ולפעמים מפרידות ביניהן שנים.</li>
+<li><strong>כישלון בהגירת נתונים הוא כמעט תמיד כישלון ממשל ולא כישלון טכני.</strong> חמישה ספקים וקבלני יישום שונים, בלי אינטרס להסכים זה עם זה, מצביעים על אותה סיבה. אין בעלים עסקי לכל תחום נתונים, אין מפת שדות, אין תוכנית ביקורת לפני שזה משנה. הבדיקות עוברות והנתונים עדיין שגויים.</li>
+<li><strong>מדרון השחרורים של SaaS הוא מס קבוע, לא סיכון חד פעמי.</strong> Workday ו-SuccessFactors משחררים גרסאות חובה פעמיים בשנה, וכל שחרור מזיז מסכים, משנה מזהי שדות ושובר אוטומציות. ארגון אחד תיאר שני מחזורי רגרסיה מלאים בכל רבעון כי לוחות השחרור של SuccessFactors ושל S/4HANA לא מסונכרנים.</li>
+<li><strong>גרטנר צופה שעד 2029, 30% מהארגונים יקימו צוותים משולבים של HR ו-IT</strong>, ומדווחת ש-85% ממנהלי HR כיום מעבירים לאחרים את ההחלטות על טכנולוגיית כוח אדם מבוססת AI. השאלה &quot;האם היחידה שייכת ל-HR או ל-IT&quot; מתחלפת בשאלה &quot;מה ההסכמות בין השניים&quot;.</li>
+<li><strong>צוותי People Analytics התייצבו על יחס של איש צוות אחד לכל 2,500 עובדים</strong> (Insight222, 2025/26, יותר מ-370 ארגונים). צוותים בשנתם הראשונה מתוקצבים כמעט חצי מזה, ומכפילים את עצמם אחרי שהם מוכיחים ערך.</li>
+<li><strong>52% מהארגונים מדווחים על שיפור עסקי מדיד מ-People Analytics</strong> (Insight222 2025/26), ובמקביל רק כחמישית מדווחים שהם &quot;יעילים מאוד&quot; בשימוש בזה (HR.com, ממקור משני). כלומר הפונקציה שווה הרבה, ורוב הצוותים לא מממשים את זה.</li>
+<li><strong>מי שמאמץ AI &quot;טכנולוגיה קודם&quot; צפוי פי 1.6 לא להגיע לתשואה שמעל הציפיות</strong> לעומת גישה שממוקדת באנשים (Deloitte Human Capital Trends 2026, כ-9,000 מנהלים ב-89 מדינות). זה נתון כללי על AI ולא על HRIS, אבל הוא הטיעון החזק ביותר לסדר הפעולות &quot;דאטה נקי לפני אג&#39;נטים&quot;.</li>
+<li><strong>בישראל אין שיח קהילתי פתוח על HRIS.</strong> אפס תוצאות רלוונטיות ב-Reddit, Hacker News ו-X בעברית ובאנגלית. השיח קיים, אבל בקבוצות לינקדאין סגורות, בוואטסאפ מקצועי ובכנסים. זו לא תקלת חיפוש, זה ממצא. הידע המקומי יושב אצל אנשים, לא במסמכים.</li>
+<li><strong>הספקים עצמם מודים שממשל אג&#39;נטים הוא בעיה לא פתורה.</strong> SAP פתחה &quot;AI Agent Hub&quot; ו-Workday השיקה &quot;Agent Passport&quot; לבדיקה ובקרה של אג&#39;נטים. אם הספק בונה כלי ממשל, מישהו בארגון צריך להפעיל אותו. זו אחריות חדשה של היחידה.</li>
+</ol>
+<hr>
+<h2 id="s3">1. מה זה HRIS ומה היחידה עושה</h2>
+<h3 id="s4">סולם ההיקף</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>שכבה</th>
+<th>מה כלול</th>
+<th>מה זה בפועל</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>HRIS</strong></td>
+<td>רשומת עובד, מבנה ארגוני, נוכחות, ממשק שכר, הטבות, שירות עצמי, דוחות בסיסיים</td>
+<td>מערכת הרשומה. מקור האמת</td>
+</tr>
+<tr>
+<td><strong>HRMS</strong></td>
+<td>HRIS ועוד גיוס, קליטה, ניהול ביצועים, מעורבות</td>
+<td>תהליכי מחזור חיי העובד</td>
+</tr>
+<tr>
+<td><strong>HCM</strong></td>
+<td>HRMS ועוד למידה, תגמול, תכנון ירושה, אנליטיקה מתקדמת</td>
+<td>הסוויטה המלאה של הספקים הגדולים</td>
+</tr>
+</tbody></table></div>
+<p>הגבול המעשי של HRIS מסתיים במקום שבו היא הופכת למקור האמת של מערכות אחרות. מהנדס זהויות תיאר את זה בצורה הכי חדה שמצאתי. Workday היא &quot;מערכת הרשומה של HR, מקור האמת לאילו חשבונות לפתוח ולסגור ב-Active Directory&quot;. פתיחת החשבונות עצמה היא של IT. הנתון שמפעיל אותה הוא של HRIS.</p>
+<p>נתון רקע שמסביר למה זה מסובך. 30% מהחברות מריצות במקביל עשר מערכות HR או יותר (AIHR, 2026, מקור יחיד ברמת מגזין מקצועי). &quot;מערכת רשומה&quot; היא לרוב הצהרת כוונות, לא מציאות.</p>
+<h3 id="s5">מטרות שארגונים כותבים לפונקציה</h3>
+<p>השפה חוזרת על עצמה בכל המקורות. מקור אמת אחד לנתוני העובדים. שלמות נתונים. אוטומציה של תהליכים. עמידה ברגולציה. יכולת לקבל החלטות בזמן אמת. ג&#39;וש ברסין הוסיף ב-2026 מטרה חדשה שמעל כולן. &quot;אנשי HR חייבים לוודא שהאג&#39;נטים שהם מפעילים ניזונים מנתונים מדויקים, עדכניים ומלאים&quot;. כלומר שלמות הנתונים היא כבר לא היגיינה תפעולית, היא תנאי הכניסה לכל יוזמת AI.</p>
+<h3 id="s6">תחומי אחריות, בפירוט</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>תחום</th>
+<th>מה זה כולל</th>
+<th>מי מחזיק את זה בדרך כלל</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>שלמות נתונים וממשל</td>
+<td>דיוק, שלמות ועדכניות של רשומת העובד, מילון הגדרות, בעלות על שדות, התאמת מצבת עם כספים</td>
+<td>HRIS אחראית, כספים ושכר מתייעצים</td>
+</tr>
+<tr>
+<td>קונפיגורציה ותחזוקה</td>
+<td>הגדרת תהליכים עסקיים, זרימות אישור, עדכוני גרסה, בדיקות רגרסיה</td>
+<td>HRIS</td>
+</tr>
+<tr>
+<td>אבטחה והרשאות</td>
+<td>תכנון תפקידים, מי רואה מה, ביקורות גישה</td>
+<td>HRIS מתכננת, אבטחת מידע מאשרת</td>
+</tr>
+<tr>
+<td>ממשקים ואינטגרציה</td>
+<td>שכר, כספים, ניהול זהויות, למידה, גיוס</td>
+<td>HRIS ו-IT יחד</td>
+</tr>
+<tr>
+<td>דוחות ואנליטיקה</td>
+<td>דוחות שגרה, דשבורדים, ניתוחים</td>
+<td>HRIS בשלב 1, צוות אנליטיקה בשלב 2</td>
+</tr>
+<tr>
+<td>דרישות ויישום</td>
+<td>תרגום צרכי HR לדרישות טכניות, ניהול פרויקטים, UAT</td>
+<td>HRIS</td>
+</tr>
+<tr>
+<td>ניהול ספקים ומפת דרכים</td>
+<td>חוזים, שחרורים, תעדוף פיצ&#39;רים, תקציב</td>
+<td>מנהל היחידה</td>
+</tr>
+<tr>
+<td>אימוץ והדרכה</td>
+<td>הכשרת משתמשים, תמיכה, ניהול שינוי</td>
+<td>HRIS, לרוב לא מתוקצב מספיק</td>
+</tr>
+<tr>
+<td>מקרי קצה של דיני עבודה</td>
+<td>קידוד הסכמים קיבוציים, ותק, סוגי היעדרות</td>
+<td>HRIS עם שכר ויחסי עבודה</td>
+</tr>
+</tbody></table></div>
+<p>הערה על אבטחת מידע. אף מקור לא הציג מטריצת RACI שבה אבטחת מידע היא עמודה נפרדת. היא תמיד &quot;מובלעת&quot; בתוך IT. בארגון מפוקח זה לא מספיק, ואת העמודה הזאת צריך לכתוב בעצמנו.</p>
+<hr>
+<h2 id="s7">2. איך זה מיושם בעולם</h2>
+<h3 id="s8">איפה היחידה יושבת</h3>
+<p>במודל אולריך, HRIS משרתת בעיקר את שכבת ה-Shared Services (שירות עצמי, מוקד פניות, שינויי נתונים), ומרכזי המומחיות (Centers of Excellence) צורכים את הנתונים שלה אבל לא בעלים של המערכת. ההמלצה המעשית שחוזרת היא לייצב את השירותים המשותפים ואת מערכת הרשומה לפני שמעבירים כוח אדם למרכזי מומחיות. זה בדיוק הטיעון לשלב 1 לפני שלב 2.</p>
+<p>מודל התפעול העתידי של גרטנר כבר מאחד את &quot;טכנולוגיית HR&quot; ואת &quot;צוות נתוני הטאלנט&quot; ליחידת תפעול ושירות אחת, ומפתח את People Analytics ל&quot;מודיעין הון אנושי&quot;. כלומר מה שאני מציע כשלב 2 הוא לפי גרטנר המקום שאליו ארגונים בוגרים הולכים.</p>
+<p>על קו הדיווח. הנתון היחיד שמצאתי הוא על HR בכלל, לא על HRIS. 61% מהארגונים מדווחים למנכ&quot;ל, 13% לסמנכ&quot;ל כספים, 10% ל-COO (AIHR, מקור יחיד). מה שכן ספציפי ל-HRIS הוא ההמלצה של גרטנר. לא לבחור בין HR ל-IT אלא לסכם מראש אזורי אחריות משותפים ועקרונות להכרעה כשהעדיפויות מתנגשות.</p>
+<h3 id="s9">כמה אנשים</h3>
+<p>הנתון המרכזי הוא יחס. &quot;1 ל-2,500&quot; פירושו איש צוות אנליטיקה אחד על כל 2,500 עובדים בארגון. זה היחס שאליו התייצבו צוותי People Analytics ב-2025 לפי Insight222 (יותר מ-370 ארגונים). היחס נמדד מול כלל העובדים בארגון ולא מול אנשי HR, כי הצוותים המצליחים משרתים את העסק כולו.</p>
+<p>מה שמעניין הוא איך היחס משתנה עם הגיל של הצוות. צוותים בשנה הראשונה שלהם מקבלים בערך חצי מהמשאבים, ואחרי שהם מוכיחים ערך הארגון מכפיל אותם.</p>
+
+<div class="calc">
+  <div class="calc-h"><b>מחשבון גודל צוות אנליטיקה</b><span>לפי היחסים של Insight222. גררו את הסליידר לגודל הארגון</span></div>
+  <div class="calc-row"><label for="orgsize">עובדים בארגון</label><input id="orgsize" type="range" min="1000" max="100000" step="500" value="10000"><output id="orgout">10,000</output></div>
+  <div class="calc-out">
+    <div><small>צוות בשנה הראשונה (1 ל-4,800)</small><b id="c1">2</b></div>
+    <div><small>צוות ותיק (1 ל-2,700)</small><b id="c2">4</b></div>
+    <div><small>ממוצע 2025 (1 ל-2,500)</small><b id="c3">4</b></div>
+  </div>
+  <p class="calc-note">זה צד האנליטיקה בלבד. את צד המערכות (קונפיגורציה, הרשאות, ממשקים) מוסיפים מעל.</p>
+</div><div class="tbl"><table>
+<thead>
+<tr>
+<th>מצב הצוות</th>
+<th>היחס</th>
+<th>מה זה אומר בארגון של 10,000 עובדים</th>
+<th>מקור</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>צוות אנליטיקה בשנה הראשונה</td>
+<td>1 ל-4,800</td>
+<td>בערך 2 אנשים</td>
+<td>Insight222 2022</td>
+</tr>
+<tr>
+<td>צוות ותיק, משנתיים ומעלה</td>
+<td>1 ל-2,700</td>
+<td>בערך 4 אנשים</td>
+<td>Insight222 2022</td>
+</tr>
+<tr>
+<td>ממוצע כלל הארגונים ב-2025</td>
+<td>1 ל-2,500</td>
+<td>4 אנשים</td>
+<td>Insight222 2025/26</td>
+</tr>
+<tr>
+<td>דוגמה מהמחקר, ארגון של 100 אלף עובדים</td>
+<td></td>
+<td>34 אנשים בממוצע</td>
+<td>Insight222 2022</td>
+</tr>
+</tbody></table></div>
+<p>וזה רק צד האנליטיקה. את צד המערכות (קונפיגורציה, הרשאות, ממשקים) מוסיפים מעל זה, ולכן הטווחים בסעיף 5 הם 3 עד 5 אנשים בשלב 1 ו-6 עד 10 בשלב 2.</p>
+<p>עוד שלושה נתוני רקע.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>מדד</th>
+<th>ערך</th>
+<th>מקור</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>יחס אנשי HR לעובדים בחברות גדולות</td>
+<td>איש HR אחד לכל 32 עובדים (חציון)</td>
+<td>Pave</td>
+</tr>
+<tr>
+<td>הוצאת HR מתוך הכנסות הארגון</td>
+<td>0.74%</td>
+<td>Gartner 2025</td>
+</tr>
+<tr>
+<td>תחום ההוצאה ב-HR שצומח הכי מהר</td>
+<td>טכנולוגיית HR</td>
+<td>Gartner 2025</td>
+</tr>
+</tbody></table></div>
+<h3 id="s10">מודל תפעול של מוצר</h3>
+<p>ההצעה הכי מעשית שמצאתי לשלב 3 היא הגדרת תפקיד &quot;Product Owner של HR&quot;. בעלות מתמשכת על הערך של המוצר, צוות רב תחומי, ניהול backlog, קבלת החלטות על סמך ראיות, שחרור בהדרגות, ובסוף גם החלטה מתי לסגור מוצר. שלוש קדנציות ניהול. אסטרטגית (חצי שנתית, חזון וגבולות), טקטית (רבעונית, OKR והימורים), תפעולית (שבועית, תעדוף ה-backlog). גרטנר מאשרת מכיוון אחר. המעבר מתמיכה מבוססת כרטיסים לשירות עצמי חכם דרך &quot;צוותי delivery זריזים&quot;.</p>
+<h3 id="s11">מודלי בשלות, עם הסתייגות</h3>
+<p>מודל הבשלות של Deloitte לאנליטיקת HR מתחיל ב&quot;דיווח תפעולי&quot; (מה קרה), עובר ל&quot;דיווח מתקדם&quot; (ריבוי זוויות שמשפיע על החלטות), ומגיע לשלבים אסטרטגיים וחזויים. 60% מפונקציות HR תקועות בשלב 2 (Deloitte, נתון מ-2024 דרך סיכום משני). ג&#39;וש ברסין מדבר על ארבע רמות של &quot;Systemic HR&quot;, כשרמה 1 היא &quot;ציות טרנזקציוני&quot;.</p>
+<p>ההסתייגות החשובה. Insight222, גוף המחקר המוביל בתחום, כתב בדוח 2025/26 שהעדשה של &quot;מודל בשלות&quot; כבר לא מספיק מהירה, והציע במקומה חמש יכולות. ייעוץ, מדעי הנתונים, הקשבה לעובדים, אנליטיקה בקנה מידה, ו-delivery. שלוש האופציות שלמטה הן עדיין מודל שלבי, כי ככה בונים יחידה בפועל, אבל את חמש היכולות שווה להחזיק כרשימת בדיקה בכל שלב.</p>
+<hr>
+<h2 id="s12">3. איך זה נראה בישראל</h2>
+<h3 id="s13">השכר הוא העוגן</h3>
+<p>חישוב שכר ישראלי (מס, ביטוח לאומי, פנסיה, קרן השתלמות, פיצויים, הסכמים קיבוציים ענפיים) הוא משהו שסוויטות HCM גלובליות לא מחשבות נכון מהקופסה. לכן הארכיטקטורה הרווחת בארגונים גדולים היא ליבת HR גלובלית או מודרנית (Workday, SuccessFactors, HiBob) ועוד ממשק ועוד מנוע שכר מקומי (חילן, מלם, מיכפל). חילן עצמה משווקת את זה כבעיה. &quot;הצורך ביצירת ממשק בין מערכת ה-HR הארגונית לבין מערכת השכר&quot; עם הכפלת הזנות, עומס תחזוקת ממשקים ואובדן מקור אמת אחד, ומציעה כאלטרנטיבה HR ושכר על בסיס נתונים אחד. זה תיאור אינטרסנטי של ספק, אבל הוא תואם את המציאות המוכרת של השוק. הלקח ליחידה חדשה. הממשק בין HR לשכר הוא הנכס הכי שביר בארגון ישראלי, ומישהו צריך להיות הבעלים שלו במפורש.</p>
+<h3 id="s14">נוף הספקים</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>שכבה</th>
+<th>שחקנים</th>
+<th>הערה</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>שכר ונוכחות מקומיים</td>
+<td>חילן, מלם תים, מיכפל, סינריון, פריוריטי</td>
+<td>שולטים בכל מקום שבו השכר הישראלי הוא הצורך המרכזי</td>
+</tr>
+<tr>
+<td>סוויטות HCM גלובליות</td>
+<td>Workday, SAP SuccessFactors, Oracle HCM, Dayforce</td>
+<td>ארגונים גדולים, לרוב עם זיקה בינלאומית</td>
+</tr>
+<tr>
+<td>חריג מעניין</td>
+<td>HiBob</td>
+<td>נוסדה בתל אביב ב-2015, היום ספקית HCM גלובלית, שווי 3.2 מיליארד דולר (ספטמבר 2026), רכשה את Pento ב-40 מיליון דולר כדי להוסיף שכר. גם ספק ישראלי לא בנה שכר בעצמו</td>
+</tr>
+</tbody></table></div>
+<p>אין נתון עדכני על גודל שוק ה-HR Tech הישראלי. המפה היחידה שמצאתי היא מ-2018 (כ-70 חברות, ממוצע 7 כלי HR בחברה גדולה). זו טקסטורה, לא מספר לציטוט.</p>
+<h3 id="s15">רגולציה שמשנה את המשחק</h3>
+<p><strong>תיקון 13 לחוק הגנת הפרטיות, בתוקף מ-14 באוגוסט 2025.</strong> אומת מול שלושה משרדי עורכי דין. מה זה אומר ליחידת HRIS.</p>
+<ul>
+<li>חובת מינוי ממונה הגנת פרטיות (DPO) לגופים ציבוריים, סוחרי מידע עם יותר מ-10,000 רשומות, מפעילי ניטור שיטתי, ולבנקים וחברות ביטוח כמעבדי מידע רגיש בהיקף נרחב.</li>
+<li>עמדת הרשות להגנת הפרטיות היא שטיפול שגרתי בנתוני עובדים לבדו לא מחייב DPO. החובה נובעת מהארגון כמכלול, לא מ-HR. אבל בארגון פיננסי ה-DPO קיים ממילא, ויחידת HRIS תעבוד תחתיו.</li>
+<li>הדירקטוריון חייב לאשר מדיניות, להגדיר אחראים ולקבל עדכונים. מינוי DPO לא פוטר אותו.</li>
+<li>הרשות קיבלה סמכויות אכיפה וקנסות בסגנון GDPR, ביקורות יזומות ודרישת מסמכים. מינוי DPO מזכה בהפחתה של 10% מהקנס (מקור יחיד, לאמת מול הרשות). לא נמצא נתון על תקרת הקנס בשקלים.</li>
+<li>הרשות ציינה שאיחוד תפקידי CISO ו-DPO באדם אחד &quot;אינו ראוי&quot;.</li>
+</ul>
+<p><strong>הוראת ניהול בנקאי תקין 364 (דצמבר 2024).</strong> מאחדת את הוראות 357, 361 ו-363 למסגרת אחת לניהול סיכוני סייבר והגנת מידע. מחשוב ענן נחשב מיקור חוץ (הוראה 359א). המשמעות ליחידה. כל מערכת HR בענן, מקומית או גלובלית, מחייבת הערכת סיכונים לפני ההתקשרות והערכה מחזורית אחריה. לא אישור רכש חד פעמי.</p>
+<p><strong>מילואים כדוגמה לסוג היעדרות שתבנית גלובלית לא מכירה.</strong> מ-2026 הזכויות הופכות קבועות. הגנה מפני פיטורים, שעת היעדרות יומית לבן או בת זוג של משרת מילואים מהיום הראשון, שיפוי מעסיקים קבוע ומענקים חד פעמיים ל-2025 ו-2026, וצו הרחבה צפוי. כל זה חייב להיות מקודד במערכת, לרוב בצד מנוע השכר המקומי.</p>
+<h3 id="s16">הממצא על השיח</h3>
+<p>ניסיתי Hacker News, Reddit ו-X בעברית ובאנגלית. אפס. השיח המקצועי הישראלי על HRIS חי בקבוצות סגורות ובכנסים (ועידת ישראל למשאבי אנוש, HR Portal). המשמעות המעשית לי. כדי להבין את השוק המקומי צריך לדבר עם אנשים, לא לקרוא. שיחות עם שלושה או ארבעה מנהלי HRIS בבנקים וחברות ביטוח שוות יותר מכל מה שיש כאן על ישראל.</p>
+<hr>
+<h2 id="s17">4. משקל פונקציית הדאטה ביחידה</h2>
+<h3 id="s18">הראיות בעד</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>ממצא</th>
+<th>מספר</th>
+<th>מקור וביטחון</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ארגונים שמדווחים על שיפור עסקי מדיד מ-People Analytics</td>
+<td>52%</td>
+<td>Insight222 2025/26, גבוה</td>
+</tr>
+<tr>
+<td>צמיחת צוותי People Analytics למרות הזעזועים</td>
+<td>60%</td>
+<td>Insight222 2025/26, גבוה</td>
+</tr>
+<tr>
+<td>מאפיין הכי מבדיל של צוותי אנליטיקה עם השפעה</td>
+<td>הנדסת נתונים ייעודית</td>
+<td>McKinsey, ממצא איכותי, בינוני</td>
+</tr>
+<tr>
+<td>אנליסטים שמדווחים שאיכות נתונים גרועה היא הבעיה הכי נפוצה</td>
+<td>57% (2024), 56% (2025)</td>
+<td>dbt Labs, כללי ולא HR, בינוני</td>
+</tr>
+<tr>
+<td>עלות שנתית ממוצעת של איכות נתונים גרועה</td>
+<td>12.9 מיליון דולר</td>
+<td>Gartner 2020, מדגם של 154 רוכשי כלי איכות נתונים, ישן ומוטה</td>
+</tr>
+<tr>
+<td>ארגונים שמאמצים AI &quot;טכנולוגיה קודם&quot; ולא מגיעים לתשואה מעל הציפיות</td>
+<td>פי 1.6</td>
+<td>Deloitte 2026, כ-9,000 מנהלים, גבוה</td>
+</tr>
+</tbody></table></div>
+<h3 id="s19">הראיות נגד, וזה חשוב לא פחות</h3>
+<p>לא מצאתי מקרה מתועד של צוות People Analytics שפורק. מה שכן מצאתי הוא פער אפקטיביות. רק 22% מהארגונים מדווחים שהם &quot;יעילים מאוד&quot; בשימוש ב-People Analytics, ורוב הצוותים &quot;מדווחים על פעילות ולא על השפעה&quot; (HR.com 2024–25, דרך סיכום משני, לאמת). מהצד של הלקוח הפנימי, פוסט ב-r/humanresources תיאר בקשת נתוני שימור ש&quot;לקחה כרטיס והמתנה ארוכה ארוכה ארוכה מ-People Analytics, ובקשות המשך אף פעם לא טופלו&quot;. הסיכון האמיתי לפונקציית דאטה הוא לא שיסגרו אותה. הוא שהיא תהפוך לקופסה שחורה איטית שכולם עוקפים.</p>
+<h3 id="s20">הכשל השקט, התאמת מצבה</h3>
+<p>HR וכספים מגדירים &quot;מצבת&quot; אחרת. HR סופרת אנשים כולל חלקיים וקבלנים, כספים סופרת FTE מתוקצבים. שניהם צודקים ושניהם לא מסכימים. זו לא טעות הקלדה, זו בעיית הגדרות, והיא הראיה הכי ברורה למה מילון נתוני כוח אדם הוא הדבר הראשון שיחידה חדשה צריכה לכתוב. לא נמצא נתון על כמה זה קורה. אבל כל מי שישב בישיבת תקציב יודע.</p>
+<h3 id="s21">אז כמה משקל</h3>
+<p>ההערכה שלי, על סמך הראיות. בשלב 1 פונקציית הדאטה היא בערך רבע מהיחידה, בעיקר ניקוי, הגדרות ובעלות על שדות. משלב 2 היא לפחות חצי, ובשלב 3 היא הסיבה שהיחידה קיימת. הטיעון פשוט. כל ערך שמשאבי אנוש רוצים להביא לעסק (תכנון כוח אדם, מיומנויות, שימור, AI) עובר דרך נתונים שמישהו סומך עליהם. בלי הפונקציה הזאת, HRIS היא מערכת יקרה להפקת תלושים.</p>
+<figure class="weight">
+  <figcaption>משקל פונקציית הדאטה מתוך היחידה, לפי שלב. הערכה שלי על סמך הראיות</figcaption>
+  <div class="wrow"><span>שלב 1 · Core HRIS</span><div class="wbar"><i style="--w:25%"></i></div><b>כרבע</b></div>
+  <div class="wrow"><span>שלב 2 · HRIS + People Analytics</span><div class="wbar"><i style="--w:55%"></i></div><b>לפחות חצי</b></div>
+  <div class="wrow"><span>שלב 3 · Full-stack HR Tech</span><div class="wbar"><i style="--w:100%"></i></div><b>הסיבה שהיחידה קיימת</b></div>
+</figure>
+<p>שני תפקידים שחוזרים כנקודת כשל כשהם חסרים. <strong>מהנדס נתונים ייעודי</strong> (McKinsey) ו**&quot;מתרגם&quot;** שמחבר תובנות לשפה עסקית (myHRfuture, המספר 78% לא אומת). מהראיות, אלה שני הגיוסים הראשונים של שלב 2.</p>
+<p>מה שלא צריך לקנות. ראיתי הרבה מספרים מרשימים על תשואת People Analytics (פי 5, פי 3.2, תשואה של פי 8.7) שמיוחסים ל-McKinsey. אף אחד מהם לא ניתן לאיתור בפרסום של McKinsey. הם חוזרים על עצמם מאתר אגרגציה אחד. לא לצטט. גם &quot;80% מהזמן של אנליסט HR הולך על ניקוי נתונים&quot; הוא פולקלור בלי מחקר מאחוריו.</p>
+<hr>
+<h2 id="s22">5. שלוש אופציות מבנה, מתפתחות</h2>
+<p>שלושת השלבים במילים פשוטות. <strong>Core HRIS</strong> היא רק מערכת הליבה, שעובדת ואמינה. <strong>HRIS + People Analytics</strong> היא אותה מערכת ועוד צוות שמנתח את הנתונים שלה. <strong>Full-stack HR Tech</strong> היא בעלות על כל מערכות ה-HR (ליבה, גיוס, למידה, ביצועים, תגמול, אג&#39;נטים) שמנוהלת כמוצר אחד. כל שלב מכיל את הקודם.</p>
+
+<div class="stepper" role="list">
+  <button class="step" data-go="opt1" role="listitem"><span class="n">שלב 1</span><b>Core HRIS</b><small>מערכת רשומה אמינה · 3 עד 5 אנשים</small></button>
+  <div class="cond">תנאי מעבר, נתונים נקיים, מילון הגדרות, ממשק שכר יציב</div>
+  <button class="step" data-go="opt2" role="listitem"><span class="n">שלב 2</span><b>HRIS + People Analytics</b><small>מערכת ועוד צוות אנליטיקה · 6 עד 10 אנשים</small></button>
+  <div class="cond">תנאי מעבר, ערך מוכח, ביקוש שעולה על ההיצע, ממשל AI</div>
+  <button class="step" data-go="opt3" role="listitem"><span class="n">שלב 3</span><b>Full-stack HR Tech</b><small>כל מחסנית ה-HR Tech כמוצר · 10 ומעלה, Product Owner</small></button>
+</div>
+<div class="opts"><div class="tabbar" role="tablist"><button role="tab" class="tab" data-tab="opt1" aria-selected="false"><span>שלב 1</span><b>Core HRIS</b><small>3 עד 5 אנשים</small></button><button role="tab" class="tab on" data-tab="opt2" aria-selected="true"><span>שלב 2</span><b>HRIS + People Analytics</b><small>6 עד 10 אנשים</small></button><button role="tab" class="tab" data-tab="opt3" aria-selected="false"><span>שלב 3</span><b>Full-stack HR Tech</b><small>10 ומעלה</small></button></div><section class="panel" id="opt1" role="tabpanel"><h3 id="s23">אופציה 1. Core HRIS. מערכת רשומה אמינה</h3>
+<p><strong>מה זה.</strong> צוות קטן שהופך את HRIS למקור אמת אמיתי. קונפיגורציה, הרשאות, ממשק שכר, ניקוי נתונים, דוחות שגרה, ניהול שחרורי ספק.</p>
+<p><strong>תפקידים.</strong> מנהל יחידה, אנליסט מערכות בכיר (קונפיגורציה ותהליכים), אנליסט מערכות (הרשאות, בדיקות, תמיכה), אחראי נתונים (מילון הגדרות, בעלות על שדות, התאמת מצבה עם כספים), ולפי הצורך מפתח ממשקים משותף עם IT.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>יתרונות</th>
+<th>חסרונות</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>הכי מהיר להקמה, תקציב נמוך</td>
+<td>נתפס כתחזוקה. קשה להראות ערך עסקי, קל להימדד לפי כרטיסים</td>
+</tr>
+<tr>
+<td>מייצר את התנאי לכל שלב אחר, נתונים שסומכים עליהם</td>
+<td>תור הבקשות בולע את הצוות. &quot;צוות HRIS קטן טובע בבקשות&quot; הוא הפוסט הכי מצוטט ב-r/workday</td>
+</tr>
+<tr>
+<td>סיכון נמוך, לא דורש כישורי דאטה נדירים</td>
+<td>הרגולציה (תיקון 13, הוראה 364) כבר דורשת יותר ממה שהמבנה הזה נותן</td>
+</tr>
+<tr>
+<td>ברור מי אחראי על מה מול שכר ו-IT</td>
+<td>בלי אנליטיקה, HR ימשיך &quot;לנחש&quot; בישיבות הנהלה</td>
+</tr>
+</tbody></table></div>
+<p><strong>מתי זה נכון.</strong> כשמערכת הרשומה עצמה לא אמינה עדיין. אם המצבה לא מתיישבת עם כספים, אין טעם לדבר על אנליטיקה.</p>
+</section><section class="panel on" id="opt2" role="tabpanel"><h3 id="s24">אופציה 2. HRIS + People Analytics. מערכת ועוד צוות אנליטיקה (הכיוון שלי)</h3>
+<p><strong>מה זה.</strong> שני צוותי משנה תחת מנהל אחד. טכנולוגיית HR (מערכת, הרשאות, ממשקים, שחרורים) ואנליטיקת אנשים (דשבורדים, ניתוחים, תכנון כוח אדם, הקשבה לעובדים). זה בדיוק המבנה של GitLab, שמפרסמת את ספר התפקידים שלה בפומבי, וזה מה שגרטנר מתארת כמודל העתידי.</p>
+<p><strong>תפקידים נוספים על שלב 1.</strong> מהנדס נתונים (צנרת מ-HRIS, שכר, נוכחות ולמידה למחסן נתונים), אנליסט People Analytics, &quot;מתרגם&quot; או שותף עסקי לאנליטיקה שיושב עם ההנהלה, ובהמשך data steward נפרד.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>יתרונות</th>
+<th>חסרונות</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>זה המקום שבו נוצר הערך שההנהלה רואה. תכנון כוח אדם, שימור, מיומנויות</td>
+<td>דורש שלב 1 מוצלח קודם. אנליטיקה על נתונים מלוכלכים מייצרת אמון שלילי</td>
+</tr>
+<tr>
+<td>יחס 1 ל-2,500 נותן מספר להתחיל ממנו, לא ניחוש</td>
+<td>גיוס מהנדס נתונים ומתרגם קשה ויקר, ואלה שני התפקידים שכשלונם הכי נפוץ</td>
+</tr>
+<tr>
+<td>מכין את התשתית ל-AI. אג&#39;נטים &quot;כותבים SQL מול כמה בסיסי נתונים משעממים&quot;, כלומר שכבת הנתונים היא המנוף</td>
+<td>מתח מובנה בין &quot;תחזיקו את המערכת&quot; ל&quot;תביאו תובנות&quot;. בלי הגנה על זמן הצוות, האנליטיקה תמיד תפסיד לכרטיסים</td>
+</tr>
+<tr>
+<td>תואם את מודל התפעול העתידי של גרטנר</td>
+<td>הסיכון של &quot;קופסה שחורה איטית&quot;. צריך SLA ותור שקוף גם לבקשות אנליטיקה</td>
+</tr>
+</tbody></table></div>
+<p><strong>מתי זה נכון.</strong> כשיש מערכת רשומה יציבה, מילון הגדרות מוסכם עם כספים, ומנדט מההנהלה לקבל החלטות על סמך נתונים. וזה גם השלב שבו הרגולציה על AI בהעסקה (AI Act, בתוקף לשימושי HR מ-2 בדצמבר 2027 אחרי הדחייה) הופכת רלוונטית, כי אנליטיקה חזויה על עובדים היא כבר &quot;סיכון גבוה&quot;.</p>
+</section><section class="panel" id="opt3" role="tabpanel"><h3 id="s25">אופציה 3. Full-stack HR Tech. כל מחסנית ה-HR Tech כמוצר</h3>
+<p><strong>מה זה.</strong> היחידה היא הבעלים של כל מחסנית ה-HR Tech. ליבה, גיוס, למידה, ביצועים, תגמון, הקשבה, פורטל העובד, ואג&#39;נטים. מנוהלת כמוצר עם Product Owner, backlog, שלוש קדנציות ממשל, וממשל AI כיכולת פנימית.</p>
+<p><strong>תפקידים נוספים על שלב 2.</strong> Product Owner (או שהמנהל הופך לזה), אחראי ממשל AI ואג&#39;נטים (מלאי מודלים, ביקורות הטיה, אדם בלולאה), מנהל ספקים ושחרורים ייעודי, אחראי אימוץ ושינוי, ומומחי מודולים לפי הצורך.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>יתרונות</th>
+<th>חסרונות</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>מקור אמת אחד לכל חוויית העובד, סוף לעשר מערכות במקביל</td>
+<td>גדול, יקר, ודורש סמכות אמיתית על תקציבים שהיום יושבים במקומות אחרים</td>
+</tr>
+<tr>
+<td>רק ככה אפשר לנהל אג&#39;נטים באחריות, כי הם חוצים מודולים</td>
+<td>ברסין עצמו מתאר את זה כשינוי מודל תפעולי של שנים, לא כפריסה</td>
+</tr>
+<tr>
+<td>ממשל AI פנימי הופך לחובה ממילא (AI Act, ניהול סיכוני מודלים בגוף מפוקח)</td>
+<td>מי שמאמץ AI &quot;טכנולוגיה קודם&quot; מפספס תשואה פי 1.6. הפיתוי כאן הכי גדול</td>
+</tr>
+<tr>
+<td>מודל מוצר מפסיק את הכרטיסים כמדד הצלחה</td>
+<td>קרבות בעלות עם IT, שכר ומרכזי המומחיות. הכל &quot;שלכם&quot; עכשיו</td>
+</tr>
+</tbody></table></div>
+<p><strong>מתי זה נכון.</strong> אחרי ששלב 2 הוכיח ערך שההנהלה מודדת, וכשיש החלטה ארגונית שטכנולוגיית HR היא מוצר ולא שירות.</p>
+</section></div><h3 id="s26">מה אני נוטה אליו</h3>
+<p>להיכנס בשלב 1 עם עיצוב של שלב 2. כלומר מהיום הראשון לגייס עם הכוונה של שני צוותי משנה, לכתוב את מילון ההגדרות ולסגור את התאמת המצבה עם כספים כפרויקט הדגל של השנה הראשונה, ולהתחיל את האנליטיקה עם שאלה עסקית אחת שההנהלה כבר שואלת. שלב 3 הוא יעד לשנה השלישית, לא הבטחה בשנה הראשונה. ואם מציעים לי את שלב 3 מהיום הראשון, זה סימן אזהרה ולא מחמאה.</p>
+<hr>
+<h2 id="s27">6. עידן ה-AI. איך יוצרים ערך אמיתי ולא הדגמה</h2>
+<h3 id="s28">מה המצב באמת</h3>
+<p>Sapient Insights, הסקר הבלתי ממומן הגדול בתחום (9,886 משיבים, 4,670 ארגונים, נובמבר 2025), מצא ש-31% מהארגונים משתמשים בטכנולוגיה כלשהי מבוססת AI ב-HR. אבל בתוך זה, 58% זה ChatGPT, ורק 9% הם יישומי HR עם AI מובנה. כלומר האימוץ רחב ורדוד. מקינזי (HR Monitor 2025, אירופה וארה&quot;ב, 1,925 חברות, דרך סיכום עברי) מצאה ש-19% מתהליכי HR משלבים GenAI ו-32% בפיילוט.</p>
+<p>מהצד של הספקים, הדברים אמיתיים ומתוארכים. Workday עם Illuminate ו-Agent System of Record (2025), SAP עם ארבעה אג&#39;נטים של Joule ל-SuccessFactors (שירות HR, פיתוח קריירה, מודיעין אנשים, שכר) בזמינות כללית ממאי 2026, Oracle עם Agent Studio. מה שלא אמיתי הוא המספרים שמסביב. &quot;40% פחות זמן טיפול&quot;, &quot;85% קליטה מהירה יותר&quot;, &quot;60% פחות שגיאות&quot;. כולם טענות ספק בלי מתודולוגיה. לא לצטט בפני הנהלה.</p>
+<h3 id="s29">מפת ערך, לפי מה שהראיות תומכות בו</h3>
+<div class="vmap"><div class="vcol"><h4>שנה 1, ניצחונות מהירים</h4><div class="vcard"><b>אג&#39;נט שירות HR שעונה על שאלות מדיניות לפני שהן הופכות לכרטיס</b><p>קיים אצל כל הספקים, תלות נמוכה בנתונים</p><p class="vcond"><span>תנאי</span> מאגר ידע מסודר, לא נתוני עובדים</p></div><div class="vcard"><b>זיהוי אנומליות בשכר (כפילויות, קפיצות, ניכויים חסרים)</b><p>טרנזקציוני, מבוסס כללים, נפח גבוה</p><p class="vcond"><span>תנאי</span> גישה לפידים של שכר ונוכחות</p></div><div class="vcard"><b>AI לניקוי נתונים ולזיהוי אי התאמות ב-HRIS עצמה</b><p>משרת את שלב 1 ישירות</p><p class="vcond"><span>תנאי</span> כלום, זה מתחיל מחר</p></div></div><div class="vcol"><h4>דורש תשתית נתונים</h4><div class="vcard"><b>הסקת מיומנויות וארגון מבוסס מיומנויות</b><p>תלוי בנתוני פעילות נקיים ורציפים</p><p class="vcond"><span>תנאי</span> טקסונומיית מיומנויות חיה, לא פרויקט</p></div><div class="vcard"><b>אג&#39;נטים של תכנון כוח אדם ומודיעין אנשים</b><p>אנליטיקה מעל נתונים. זבל נכנס, זבל יוצא</p><p class="vcond"><span>תנאי</span> שלב 2 קיים ועובד</p></div></div><div class="vcol"><h4>דורש שינוי ארגוני</h4><div class="vcard"><b>אוטומציה חוצת מודולים של מחזור חיי העובד (&quot;superagents&quot;)</b><p>ברסין מתאר את זה כשינוי מבנה של HR, לא פריסה</p><p class="vcond"><span>תנאי</span> שלב 3</p></div><div class="vcard"><b>ממשל אג&#39;נטים כיכולת פנימית</b><p>הספקים בונים כלי ממשל כי זה לא נפתר אצלם</p><p class="vcond"><span>תנאי</span> תפקיד, ועדה, תהליך</p></div></div></div>
+<h3 id="s30">מה היחידה חייבת להחזיק כדי שכל זה יקרה</h3>
+<ol>
+<li><strong>שכבת הנתונים.</strong> רשומת עובד נקייה, פידים מסודרים, מחסן נתונים. זה הנכס. הממשק של הספק הוא לא.</li>
+<li><strong>טקסונומיית מיומנויות כמערכת חיה.</strong> לא פרויקט של פעם בשנה.</li>
+<li><strong>ניהול מפת הדרכים של ה-AI של הספק.</strong> מי מחליט איזה אג&#39;נט מדליקים, מתי, ומי בודק אותו לפני ואחרי. Agent Passport של Workday ו-AI Agent Hub של SAP קיימים בדיוק בשביל זה.</li>
+<li><strong>ממשל AI.</strong> מלאי מודלים ואג&#39;נטים, ביקורות הטיה, נקודות אדם בלולאה, שקיפות לעובדים. AI Act מסווג גיוס, הערכה, ניטור, קידום ופיטורים כ&quot;סיכון גבוה&quot;. החובות נדחו ל-2 בדצמבר 2027, אבל התאריך קיים, ובגוף פיננסי ניהול סיכוני מודלים יחול על מודלים של HR כמו על כל מודל אחר.</li>
+<li><strong>אמון העובדים.</strong> רק 27% מהעובדים סומכים לגמרי על המעסיק שישתמש ב-AI באחריות ו-59% חושבים שזה מחמיר הטיות (SHL, מחקר ספק, נובמבר 2025). אזכורי AI בביקורות עובדים עלו 240% בשנה והסנטימנט ירד מ-81% חיובי ל-43% (HR Executive, מתודולוגיה לא אומתה). ערך אמיתי לעסק כולל את זה שהעובדים לא בורחים מהמערכת.</li>
+</ol>
+<h3 id="s31">מה זה &quot;ערך אמיתי&quot; בארגון פיננסי</h3>
+<p>ארבעה ערוצים שאפשר למדוד. פריון (שעות HR שחוזרות לעבודה אסטרטגית, זמן קליטה), סיכון (ציות לתיקון 13 ולהוראה 364, שגיאות שכר, ביקורות גישה), טאלנט (שימור, מוביליות פנימית, פערי מיומנויות), ועלות (מערכות כפולות, רישיונות, זמן ידני). האג&#39;נט המרשים ביותר לא שווה כלום אם הוא לא מזיז אחד מהארבעה. וכל אחד מהם דורש נתון &quot;לפני&quot; שמישהו סומך עליו. שוב שלב 1.</p>
+<hr>
+<h2 id="s32">7. נקודות עיוורות למי שמגיע מעולם הלמידה</h2>
+<p>אלה הדברים שאנשי HRIS ותיקים רואים ואני כנראה לא. סימנתי מה מגובה בראיות ומה השערה.</p>
+<ol>
+<li><strong>אין השקה. יש תחזוקה לנצח.</strong> מגובה. הספק שובר את המערכת פעמיים בשנה. בדיקות רגרסיה הן שורה קבועה בכוח האדם, לא משימת פרויקט. בעולם הלמידה קורס יוצא ונשאר יציב. כאן שום דבר לא נשאר יציב.</li>
+<li><strong>&quot;עלייה לאוויר מוצלחת&quot; ו&quot;מערכת שעובדת&quot; רחוקות שנים.</strong> מגובה. 13% עולות על הציפיות, 43% ממנהלי HR מדרגים את הטכנולוגיה שלהם כיעילה, וכ-32% מהעובדים בממוצע באמת משתמשים ב-HRIS (הנתון האחרון מיוחס לגרטנר דרך SHRM, לא אומת). כשתירש מערכת עם 30% שימוש, זה החציון, לא אסון ייחודי.</li>
+<li><strong>ממשל נתונים אין לו מקבילה בלמידה.</strong> מגובה. &quot;ביקורת תוכן&quot; זה לא זה. בעלות על שדה, מפת שדות, החלטה אילו רשומות היסטוריות עוברות, ביקורת לפני שזה משנה. קל להניח ש&quot;IT מטפל&quot; כשבפועל אף אחד לא.</li>
+<li><strong>התפרים בין מערכות הם שלך גם כשהמערכות לא.</strong> מגובה. שכר, כספים, ניהול זהויות. הם נשברים לפי לוחות זמנים שאף אחד לא שולט בהם במרכז.</li>
+<li><strong>הרשאות הן חוב שמצטבר.</strong> מגובה. תכנון תפקידים חייב להיכנס ל-UAT מהיום הראשון, וכל שחרור יכול לשנות בשקט מי רואה מה. בארגון מפוקח זו חשיפת ציות, לא אי נוחות.</li>
+<li><strong>תור הבקשות יבלע את הצוות אם לא תגן עליו.</strong> מגובה מהקהילה. &quot;צוות HRIS קטן טובע בבקשות&quot; (41 הצבעות, 60 תגובות), עם עצה בולטת. &quot;אנשים עוזבים כשהם מוצפים ולא מרגישים נתמכים&quot;. צריך תור שקוף, SLA, ותפקיד intake נפרד מקונפיגורציה.</li>
+<li><strong>החרטות הכי נפוצות אחרי הטמעה.</strong> מגובה מהקהילה. &quot;מבנה דיווח גרוע, בעלות לא ברורה בין HR, שכר ו-IT, והערכת חסר של ניקוי הנתונים לפני&quot;. שלושתם ניתנים למניעה בשלב האפיון.</li>
+</ol>
+<h3 id="s33">&quot;לא יודע שאני לא יודע&quot;, השערות שלא הצלחתי לגבות</h3>
+<p>חיפשתי בשני סבבים ראיות לארבעת אלה ולא מצאתי. הם נשארים השערות מנוסחות, ולא ממצאים. הן כאן כי אם הן נכונות, הן מסוכנות.</p>
+<ul>
+<li><strong>מנדט בלי סמכות.</strong> לקבל &quot;טרנספורמציה&quot; בכותרת ותקציב של תחזוקה. סימן זיהוי, התקציב של המערכת יושב אצל מישהו אחר.</li>
+<li><strong>הגיוס הראשון קובע את הזהות.</strong> אם שני הראשונים הם אנשי קונפיגורציה, היחידה תהיה מוקד תמיכה. אם אחד מהם הוא מהנדס נתונים, היא תהיה משהו אחר.</li>
+<li><strong>עבודת השינוי לא מופיעה בתוכנית.</strong> אימוץ, הדרכה ותקשורת נראים &quot;רכים&quot; ולכן לא מתוקצבים. דווקא כאן הרקע שלי בלמידה הוא יתרון אמיתי, אם אדרוש שזה ייכנס לתקציב.</li>
+<li><strong>המעמד נקבע במפגש הראשון עם כספים.</strong> מי שמגיע עם התאמת מצבה שעובדת מקבל מקום בשולחן. מי שמגיע עם דשבורד יפה ומצבה שלא מתיישבת, לא.</li>
+</ul>
+<p>הסיבה שאין על זה ראיות פתוחות היא כנראה שזה נאמר בשיחות ולא נכתב. וזה בדיוק מה שצריך לעשות עם זה. לשאול ארבעה אנשים שניהלו יחידה כזאת.</p>
+<hr>
+<h2 id="s34">8. שורה תחתונה. מה לעשות לפני שאומרים כן</h2>
+<ol>
+<li><strong>לבקש ארבע תשובות לפני קבלת התפקיד.</strong> מי הבעלים של תקציב המערכות. מה ההסכמה עם IT על אחריות משותפת (לפי גרטנר, לא &quot;של מי זה&quot;). האם המצבה מתיישבת עם כספים היום. ומה ההנהלה רוצה לדעת שהיא לא יודעת היום.</li>
+<li><strong>לקבוע את פרויקט הדגל של שנה 1.</strong> מילון הגדרות כוח אדם מוסכם עם כספים ושכר, והתאמת מצבה שעובדת. זה משעמם וזה מה שקונה את הזכות לדבר על AI.</li>
+<li><strong>לגייס לפי שלב 2 גם אם מתחילים בשלב 1.</strong> אחד משני הגיוסים הראשונים הוא מהנדס נתונים או data steward. לא שני אנשי קונפיגורציה.</li>
+<li><strong>לבנות תור שקוף מהיום הראשון.</strong> בקשות, SLA, ותפקיד intake. אחרת הצוות יטבע ויעזוב.</li>
+<li><strong>לתקצב את מדרון השחרורים ואת האימוץ.</strong> שני מחזורי רגרסיה בשנה ואחראי הדרכה ושינוי. אם זה לא בתקציב, זה יבוא מהאנליטיקה.</li>
+<li><strong>לבחור ניצחון AI אחד לשנה 1</strong> שלא תלוי בנתוני עובדים. אג&#39;נט מדיניות מעל מאגר ידע, או זיהוי אנומליות בשכר. לא אנליטיקה חזויה על אנשים.</li>
+<li><strong>לדבר עם ארבעה מנהלי HRIS ישראלים</strong> מגופים פיננסיים. הידע המקומי לא כתוב בשום מקום.</li>
+<li><strong>לרשום את ה-AI Act ואת תיקון 13 בלוח השנה של היחידה.</strong> 2 בדצמבר 2027 ליישומי HR בסיכון גבוה, והערכת סיכונים לפי הוראה 364 לכל ספק ענן.</li>
+</ol>
+<hr>
+<h2 id="s35">9. שאלות שהמסמך לא שאל בגרסה הראשונה</h2>
+<p>שמונה זוויות שהוספתי אחרי סבב מחקר משלים. הראשונות משנות מה כדאי לעשות, האחרונות הופכות את ההמלצות למשהו שאפשר לבצע בשבוע הבא.</p>
+<h3 id="s36">9.1 מה ה-CHRO באמת מתכוון כשהוא אומר &quot;להעלות את הערך של HR&quot;</h3>
+<p>&quot;להעלות את הערך של HR לעסק&quot; הוא משפט שמסתיר לפחות ארבע כוונות שונות, וכל אחת מהן בונה יחידה אחרת.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>הקריאה</th>
+<th>מה ה-CHRO אומר בפועל</th>
+<th>איזו יחידה זה בונה</th>
+<th>מה הראיות אומרות על השכיחות</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>(א) מספרים אמינים וציות</td>
+<td>&quot;נמאס לי להתבייש במצבה שלא מתיישבת&quot;</td>
+<td>שלב 1, מערכת רשומה</td>
+<td>מופיע כתשתית וכמכשול, לא כיעד. 23% ממנהלי HR מציינים חוסר בנתונים פנימיים כמכשול העיקרי לתכנון כוח אדם (מקור משני, לא אומת)</td>
+</tr>
+<tr>
+<td>(ב) מקום בשולחן</td>
+<td>&quot;אני רוצה להיות בשיחות על תכנון כוח אדם ועלויות&quot;</td>
+<td>שלב 2, אנליטיקה</td>
+<td>הכלי שדרכו מרוויחים אמון. הספרות אחידה, נתוני HR מתורגמים לשפת הכנסות וסיכון שימור, לא מוצגים כדשבורד</td>
+</tr>
+<tr>
+<td>(ג) חוויית עובד מודרנית</td>
+<td>&quot;המערכות שלנו מביכות&quot;</td>
+<td>פורטל, שירות עצמי</td>
+<td>McKinsey מסמן את זה כתחום שבו HR כבר משקיע יתר על המידה יחסית להשפעה</td>
+</tr>
+<tr>
+<td>(ד) HR מוביל ב-AI</td>
+<td>&quot;אני לא רוצה להיות הפונקציה הכי פחות מבינה ב-AI בהנהלה&quot;</td>
+<td>שלב 2 עם ממשל AI</td>
+<td>הקריאה הכי נפוצה ב-2026. 68% מה-CHROs מציינים יוזמות AI כעדיפות ראשונה (i4cp, דצמבר 2025). גרטנר (426 CHROs) שמה מימוש ערך מ-AI בשלוש הראשונות</td>
+</tr>
+</tbody></table></div>
+<p>מה שהראיות אומרות. הקריאה הדומיננטית ב-2026 היא (ד), עם (ב) בתור הדרך להגיע לשם. (א) היא התשתית ולא היעד, ו-(ג) היא הפח. כמה נתונים שמסבירים למה.</p>
+<ul>
+<li>60% מהמנכ&quot;לים כבר מגדירים את ה-CHRO שלהם &quot;שותף עסקי אפקטיבי מאוד&quot; (PwC Pulse, מאי 2025, 678 בכירים). אבל רק 49% מה-CHROs עצמם מדרגים &quot;להיות שותף אסטרטגי יותר למנכ&quot;ל&quot; כעדיפות גבוהה. הפער הוא בין אמון שניתן לבין אמון שמומש בהכללה בפורומים של החלטות.</li>
+<li>ל-CHROs יש מוניטין של הפונקציה הכי פחות מבינה ב-AI בהנהלה (Fortune על מחקר גרטנר, מאי 2025). קריאה (א) לא מטפלת בזה. קריאה (ד) כן.</li>
+<li>רק 37% ממנהלי HR חושבים שהפונקציה שלהם אפקטיבית, ורק אחד מארבעה צוותי HR מרגיש מוכן לטרנספורמציה (McKinsey HR Monitor 2025, 1,925 חברות). מנדטים עמומים מתכווצים בשקט לאזורי הנוחות התפעוליים.</li>
+<li>גרטנר מצאה ששינוי מודל התפעול של HR הוא הגורם עם ההשפעה החזויה הגבוהה ביותר על רווחי הפריון מ-AI, 29%. כלומר היחידה עצמה, לא הכלי, היא ההימור.</li>
+</ul>
+<p><strong>מה זה משנה לתוכנית שלי.</strong> ההצעה &quot;שלב 1 קודם&quot; נכונה, אבל אסור למכור אותה כהיגיינה. צריך למכור אותה כתשתית ה-AI של HR, עם ניצחון AI אחד בשנה הראשונה שמראה את הכיוון. אם אציג רק מילון הגדרות והתאמת מצבה, ה-CHRO ישמע &quot;עוד שנתיים של תחזוקה&quot; ויחפש מישהו אחר שיעשה (ד).</p>
+<p><strong>שאלות ל-CHRO לפני שאומרים כן.</strong> כשתספר על היחידה הזאת למנכ&quot;ל, מה המשפט הראשון. איזו החלטה בהנהלה השנה נעשתה על סמך תחושה כי לא היו נתונים. מה יקרה אם בעוד שנה יש מספרים נקיים ואפס AI. ומה יקרה אם יש אג&#39;נט מרשים ומצבה שעדיין לא מתיישבת.</p>
+<h3 id="s37">9.2 מי מרוויח, מי מפסיד. מפת בעלי העניין</h3>
+<p>יחידה שהופכת לבעלים של נתוני העובדים לוקחת משהו ממישהו. החרטה הכי נפוצה אחרי הטמעה, לפי הקהילה, היא &quot;בעלות לא ברורה בין HR, שכר ו-IT&quot;. המפה הזאת היא הניסיון למנוע את זה מראש.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>בעל עניין</th>
+<th>מה הוא מאבד</th>
+<th>מה הוא יכול להרוויח</th>
+<th>מה אני מציע לו</th>
+<th>סימן אזהרה</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>שכר</td>
+<td>המונופול על &quot;המספרים האמיתיים&quot;</td>
+<td>פחות הזנות כפולות, פחות תיקונים רטרואקטיביים</td>
+<td>בעלות משותפת על הממשק, השכר נשאר הסמכות על החישוב</td>
+<td>&quot;אנחנו נעדכן אתכם אחרי הסגירה&quot;</td>
+</tr>
+<tr>
+<td>IT</td>
+<td>מערכת, תקציב, שליטה בספק</td>
+<td>פחות כרטיסי HR, שותף שמדבר את שפת האבטחה</td>
+<td>הסכם אחריות משותפת בכתב לפי גרטנר, IT מחזיק תשתית ואבטחה, היחידה מחזיקה קונפיגורציה ותהליך</td>
+<td>&quot;זו מערכת של IT, אתם משתמשים&quot;</td>
+</tr>
+<tr>
+<td>כספים</td>
+<td>הוויכוח על המצבה, שהם רגילים לנצח בו</td>
+<td>מקור אחד למצבה ולעלות כוח אדם, סוף לישיבות התאמה</td>
+<td>מילון הגדרות משותף, שניהם חותמים</td>
+<td>סמנכ&quot;ל הכספים ממשיך להביא טבלה משלו</td>
+</tr>
+<tr>
+<td>שותפי HR ומרכזי מומחיות</td>
+<td>הגיליונות הפרטיים, החופש להגדיר לבד</td>
+<td>תשובות מהירות, דשבורד במקום בקשת דוח</td>
+<td>תור שקוף עם SLA, ומעורבות בהגדרות</td>
+<td>גיליונות צל שממשיכים לחיות אחרי העלייה לאוויר</td>
+</tr>
+<tr>
+<td>אבטחת מידע וה-DPO</td>
+<td>שקט. עוד מערכת ענן, עוד ספק</td>
+<td>בעלים אחד לנתוני העובדים במקום עשרה</td>
+<td>הערכת סיכונים לפי הוראה 364 כחלק מהתהליך שלי, לא כמכשול</td>
+<td>הערכת סיכונים שמתחילה אחרי שהחוזה נחתם</td>
+</tr>
+<tr>
+<td>מנהלים בקו</td>
+<td>כלום. הם לא יודעים שהיחידה קיימת</td>
+<td>תשובה על הצוות בלי לחכות לשותף HR</td>
+<td>דשבורד שעונה על שאלה ניהולית אחת (סעיף 9.3)</td>
+<td>שימוש שלא נמדד</td>
+</tr>
+<tr>
+<td>עובדים</td>
+<td>פרטיות, אם לא נזהרים</td>
+<td>שירות עצמי שעובד, שקיפות על השימוש בנתונים</td>
+<td>הצהרה ברורה מה נאסף ולמה, בהתאם לתיקון 13</td>
+<td>סימון פנימי שנראה לאנשים שלא צריכים לראות אותו</td>
+</tr>
+<tr>
+<td>ה-CHRO</td>
+<td>דבר, אם היחידה מצליחה</td>
+<td>הסיפור שמוכר למנכ&quot;ל</td>
+<td>שלושה KPI ברורים (סעיף 9.5) ומקום קבוע בסדר היום</td>
+<td>&quot;תעשו מה שצריך, תעדכנו אותי&quot;</td>
+</tr>
+</tbody></table></div>
+<p>הכלל שעולה מהמפה. בשלושת השבועות הראשונים לפגוש כל שורה בטבלה, לשאול מה הם מפחדים לאבד, ולכתוב את ההסכמות. לא כי זה נחמד, כי זה הכשל מספר אחת.</p>
+<h3 id="s38">9.3 נקודת המבט של העובד ושל המנהל</h3>
+<p>המסמך דיבר על עובדים כנושאי מידע וכשיעורי אימוץ. הראיות מהצד שלהם.</p>
+<p><strong>עובדים.</strong> רק 29% מהעובדים מאמינים ש-HR מבין מה הם צריכים (גרטנר, אפריל 2025, מתודולוגיה מאחורי תשלום). הם מעדיפים שירות עצמי על פני מוקד פניות, כלומר הם רוצים לפתור לבד ולא לפתוח כרטיס. מה שעומד בדרכם הוא עומס. תאגיד גדול ממוצע מפעיל 93 יישומים לעובדים, עלייה של 57% בשלוש שנים (Bersin ו-Microsoft, 2025, מחקר בחסות ספק). ומחקר אקדמי מ-2025 (274 עובדים) מאשר את המובן מאליו, שימוש בפועל ב-HRIS נקבע לפי תועלת נתפסת וקלות שימוש, לא לפי הנחיה.</p>
+<p><strong>מנהלים.</strong> 47% מהמנהלים עובדים קשה יותר מלפני שנה, ו-66% אומרים שהאחריות העיקרית שלהם היא ניהול האנשים בצוות (גרטנר, כ-3,000 משיבים, אפריל 2026). מנהל שמגדיר את התפקיד ככה יראה בדשבורד עוד משימה מנהלתית, אלא אם הוא חוסך לו זמן ניהול. שירות עצמי למנהלים הוא הכשל הקלאסי של &quot;בנינו והם לא באו&quot;. שני מקורות מקצועיים בלתי תלויים מתארים אותו זהה. אישורים, דוחות צוות, מצבה, כולם נפרסו בעלייה לאוויר, ואחרי שנה וחצי HR עדיין עושה את העבודה שהמערכת נבנתה כדי לעקוף. הסיבות שנקבו בהן. אין מדד אימוץ, אין בעלים למדד, וההנחה שזו פריסת טכנולוגיה ולא שינוי התנהגות.</p>
+<p><strong>אמון.</strong> רק 26% מהמועמדים סומכים על AI שיעריך אותם בהוגנות (גרטנר, יולי 2025). זה צד המועמדים, אבל זו התקרה לכל אות AI על דשבורד ניהולי. ומההאקר ניוז, תלונה מ-2026 על כך שאיחוד HR, שכר וגיוס במערכת אחת חושף &quot;סימונים&quot; פנימיים ליותר אנשים ממה שהעובד מצפה, ותלונה מ-2024 שמסבירה למה Workday שולטת &quot;למרות חוויית משתמש גרועה&quot;. מי שבוחר את המערכת הוא לא מי שמשתמש בה.</p>
+<p><strong>מה מנהל צריך כדי לפתוח את הדשבורד במקום לשאול את שותף ה-HR.</strong> חמישה תנאים שעולים מהראיות.</p>
+<ol>
+<li>הוא חייב לענות על שאלה ניהולית, מי בסיכון עזיבה, למי מגיעה שיחה, איפה חסר איוש, בפחות קליקים מהודעה לשותף HR.</li>
+<li>הוא חייב להגיד מה לעשות, לא רק מה המספר. ציון סיכון בלי הסבר גרוע מאין ציון.</li>
+<li>לאימוץ יש בעלים ויעד מהיום הראשון.</li>
+<li>השימוש בו הוא חלק ממה שנחשב &quot;מנהל טוב&quot;, לא נוחות אופציונלית.</li>
+<li>כל אות שמגיע מ-AI מסביר את עצמו, אחרת המנהלים יעקפו אותו בדיוק כמו שמועמדים עוקפים סינון AI.</li>
+</ol>
+<p>זה המקום שבו הרקע שלי הוא יתרון ולא חיסרון. כל אחד מחמשת התנאים הוא בעיית למידה והתנהגות, לא בעיית מערכת.</p>
+<h3 id="s39">9.4 למה בכלל יחידה חדשה. האלטרנטיבות</h3>
+<p>כל שלוש האופציות במסמך הן יחידה. השאלה שאף אחד לא שאל היא אם צריך אחת.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>חלופה</th>
+<th>מה זה</th>
+<th>מתי זה נכון</th>
+<th>הראיות</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>א. נתוני HR אצל יחידת הדאטה הארגונית, HR לקוח פנימי</td>
+<td>הליבה הטכנית יושבת בדאטה, HR מחזיק רק את השכבה הפונה ללקוח</td>
+<td>היקף אנליטיקה צר ואחיד, צרכים דומים בין יחידות</td>
+<td>גרטנר ממליצה שאנליטיקת אנשים תדווח ל-CHRO עם קו מקווקו ל-IT ולכספים. יחידת דאטה כשותף שירות, לא כבעלים. אין נתון על אחוזי קווי דיווח (Insight222 מאחורי טופס)</td>
+</tr>
+<tr>
+<td>ב. Product Owner מוטמע בשירותים המשותפים של HR, בלי יחידה</td>
+<td>קבוצת &quot;מוצר אנשים&quot; בתוך תפעול HR, מודל צוותי תוכנה</td>
+<td>כשיש כבר שירותים משותפים מתפקדים ותפקיד מתאם</td>
+<td>Deloitte &quot;People Product Operating Model&quot; דוחה במפורש יחידת HR Tech נפרדת. גרטנר מציעה תפקיד HR COO שקושר טכנולוגיה, שירותים משותפים ומרכזי מומחיות</td>
+</tr>
+<tr>
+<td>ג. HRIS מנוהל על ידי ספק (AMS, שירותים מנוהלים)</td>
+<td>הספק מחזיק קונפיגורציה, ממשקים, שחרורים. בפנים נשאר Product Owner רזה</td>
+<td>כשיש מסלול ענפי לפלטפורמה שכבר בשימוש</td>
+<td>Deloitte משיקה &quot;Workday Accelerators&quot; ייעודיים לבנקאות סביב ציות ובקרות. אין נתון עלות או מקרה רגולטורי, לטובה או לרעה</td>
+</tr>
+<tr>
+<td>ד. פדרציה, ליבה קטנה ונאמני נתונים בכל מרכז מומחיות</td>
+<td>מרכז שמגדיר מדיניות, ביצוע בשטח</td>
+<td>ארגונים מורכבים ובוגרים עם חברות בנות מגוונות</td>
+<td>AIHR מסמן את זה במפורש &quot;לא מתאים להקמת פונקציית אנליטיקה&quot;. מודל שצומחים אליו, לא מתחילים בו</td>
+</tr>
+</tbody></table></div>
+<p><strong>הכשל של &quot;יחידה חדשה&quot;.</strong> הניו יורק טיימס ריכז מחדש את צוות מדעי הנתונים שלו אחרי תקופה של הטמעה ביחידות, כדי &quot;להתמקד בבעיות המוצר הכי שוות&quot;. זה לא מקרה HR, אבל זה הדפוס. פונקציות דאטה נעות במחזורים בין ריכוז לביזור, ומי שמקים יחידה לפני שהכלים, התקנים והציפיות בשלים מסתכן בכך שיפרקו אותה בעוד שלוש שנים.</p>
+<p><strong>מתי יחידה עצמאית מוצדקת, לפי הראיות בלבד.</strong> כשהארגון מורכב ורב ישויות ולא עסק הומוגני אחד. כשבשלות הדאטה כבר קיימת ולא נולדת. כשאין תפקיד מתאם או מבנה שירותים משותפים שיכול לספוג את המנדט. וכשאי אפשר להעביר חלק גדול מהעבודה התפעולית למסלול שירותים מנוהלים ענפי.</p>
+<p><strong>התשובה שלי לשאלה &quot;למה יחידה&quot;.</strong> בארגון פיננסי גדול עם ליבה גלובלית ושכר מקומי, עשר מערכות במקביל ורגולציה שדורשת בעלים אחד לנתוני עובדים, הקריטריונים הראשון והשלישי מתקיימים. השני לא. לכן התשובה הכנה היא &quot;יחידה, אבל רזה, שמתחילה כמו חלופה ב&quot;. Product Owner אחד עם מנדט, שניים או שלושה אנשי ליבה, שירותים מנוהלים לעבודה התפעולית שאפשר להוציא, והרחבה ליחידה מלאה רק כשהעומס והממשל מוכיחים את הצורך. אם מישהו שואל &quot;למה לא להטמיע את זה ב-IT או בדאטה&quot;, זו התשובה, וכדאי שתהיה מוכנה לפני שהשאלה נשאלת.</p>
+<h3 id="s40">9.5 כמה זה עולה בשנה הראשונה, ומה מבטיחים</h3>
+<p><strong>מה כן ידוע.</strong></p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>פריט</th>
+<th>נתון</th>
+<th>מקור ואמינות</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ארגונים שהגדילו הוצאת HR Tech השנה</td>
+<td>39%, ועוד 37% מתכננים להגדיל</td>
+<td>Sapient 2025–26, 4,670 ארגונים, גבוה</td>
+</tr>
+<tr>
+<td>טכנולוגיה מתוך תקציב HR</td>
+<td>8.4%, הסעיף הגדול ביותר</td>
+<td>Gartner 2024, בינוני</td>
+</tr>
+<tr>
+<td>תקציב ניהול שינוי מתוך תקציב הפרויקט</td>
+<td>10% עד 15% מומלץ, 6% הרצפה שמתחתיה הסיכוי להצליח יורד, רוב הארגונים מתחת ל-5%</td>
+<td>Prosci, ספק הדרכה אבל המחקר המצוטט בתחום, בינוני</td>
+</tr>
+<tr>
+<td>שכר HRIS Analyst בארה&quot;ב</td>
+<td>77 עד 124 אלף דולר</td>
+<td>אתרי שכר, טווח רחב</td>
+</tr>
+<tr>
+<td>שכר HRIS Manager בארה&quot;ב</td>
+<td>112 עד 168 אלף דולר</td>
+<td>אתרי שכר, טווח רחב</td>
+</tr>
+<tr>
+<td>שכר מנהל מערכות HR בישראל</td>
+<td>12,500 עד 36,000 ש&quot;ח לחודש לפי ותק</td>
+<td>טבלת דנאל 2025, מקור יחיד, מתודולוגיה לא ידועה</td>
+</tr>
+</tbody></table></div>
+<p><strong>מה לא ידוע, ולא כדאי להמציא.</strong> מחירי רישיון לעובד לחודש של Workday, SuccessFactors ו-Oracle מופיעים רק באתרי השוואה שסותרים את עצמם. מכפיל היישום (פי 1 עד 2.5 מהרישיון השנתי) הוא כלל אצבע בלי מקור. עלות שירותים מנוהלים ובדיקות רגרסיה חוזרות, אין נתון. עלות ניקוי נתונים היסטוריים, אין נתון. כל אלה דורשים RFP, לא ניחוש.</p>
+<p><strong>מסגרת תקציב לשנה הראשונה.</strong></p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>שורה</th>
+<th>מה נכנס</th>
+<th>מצב</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>רישיונות פלטפורמה</td>
+<td>לעובד לחודש כפול מצבה</td>
+<td>הצעת מחיר בלבד</td>
+</tr>
+<tr>
+<td>יישום וממשקים חד פעמיים</td>
+<td>קונפיגורציה, ממשק שכר, זהויות</td>
+<td>כלל אצבע לא מאומת, לאמת מול קבלן</td>
+</tr>
+<tr>
+<td>ניהול שינוי, אימוץ והדרכה</td>
+<td>10% עד 15% מהפרויקט</td>
+<td>השורה היחידה עם מקור. לא לוותר עליה</td>
+</tr>
+<tr>
+<td>כוח אדם</td>
+<td>אנליסט בכיר, מנהל או אנליסט דאטה, מנהל היחידה</td>
+<td>טווחי שכר למעלה</td>
+</tr>
+<tr>
+<td>מדרון שחרורים</td>
+<td>שני מחזורי רגרסיה בשנה</td>
+<td>פער, לתמחר עם הספק</td>
+</tr>
+<tr>
+<td>ניקוי נתונים ומילון הגדרות</td>
+<td>זרם עבודה של רבעון</td>
+<td>פער, לתמחר לפי ימי עבודה</td>
+</tr>
+</tbody></table></div>
+<p><strong>על מה להימדד.</strong> Insight222 מצאה שמה שמבדיל צוותי אנליטיקה מצטיינים הוא לא כמות הדוחות. זה מיקוד במספר קטן של נושאים עסקיים, קשרים חזקים ליד ההנהלה, מדידת ערך כספי, ומוצרים שמתרחבים בארגון. ISO 30414 במהדורת 2025 מגדיר 69 מדדי הון אנושי, מהם 14 בסיסיים שנדרשים מכל ארגון. GitLab מנהלת עץ KPI פומבי ליחידה שלה. ולמדדי איכות נתונים לא נמצא שום סף מספרי מקובל, אז את ה-SLA צריך להגדיר בעצמנו.</p>
+<p><strong>שלוש הבטחות לשנה הראשונה.</strong></p>
+<ol>
+<li><strong>נדווח לפי תקן חיצוני ולא לפי כרטיס ניקוד שהמצאנו.</strong> 14 מדדי הבסיס של ISO 30414 עד סוף השנה. ניתן לביקורת ולהשוואה.</li>
+<li><strong>נמדוד החלטות שהשפענו עליהן וערך כספי, לא דוחות שסיפקנו.</strong> מספר ההחלטות המהותיות שהיחידה הזינה, ומקרה ערך כספי מכומת אחד בכל חצי שנה.</li>
+<li><strong>נגן על תקציב ניהול השינוי ונפרסם SLA לאיכות נתונים.</strong> 10% עד 15% מהפרויקט משוריינים, ומילון הגדרות אחד למצבה, לעובד פעיל, לתחלופה ול-FTE שכספים ו-HR חתומים עליו.</li>
+</ol>
+<h3 id="s41">9.6 ההתאמה שלי, בכנות</h3>
+<p><strong>מה אני מביא שאנשי HRIS לרוב לא.</strong> שלוש נקודות מהראיות. הכשל של שירות עצמי למנהלים הוא בעיית שינוי התנהגות, לא בעיית מערכת. ניהול השינוי הוא השורה שרוב הארגונים מתקצבים מתחת ל-5% ומשלמים על זה. ו-29% מהעובדים בלבד מאמינים ש-HR מבין אותם. אימוץ, הטמעה, הכשרת מנהלים ועבודה עם בעלי עניין הם בדיוק מה שאני עושה היום. בנוסף, ל-CHROs יש מוניטין של הכי פחות מבינים ב-AI בהנהלה, ומנהל למידה שמבין AI ומחזיק את נתוני HR הוא פרופיל שכמעט לא קיים.</p>
+<p><strong>מה אין לי.</strong> ממשל נתונים כמשמעת, תכנון הרשאות, ניהול שחרורי ספק, ארכיטקטורת ממשקים, וניסיון בישיבת תקציב מול כספים על מצבה.</p>
+<p><strong>מה אני סוגר לבד ומה אני מגייס סביבו.</strong> לסגור לבד, ממשל נתונים ומילון הגדרות, כי זו עבודת הסכמות ולא עבודת קוד, וכי מי שמחזיק את ההגדרות מחזיק את היחידה. לגייס סביב, קונפיגורציה, הרשאות וממשקים. אנליסט מערכות בכיר אחד טוב פותר את שלושתם בשנה הראשונה.</p>
+<p><strong>מה זה עושה למסלול שלי.</strong> טכנולוגיית HR היא סעיף ההוצאה עם הצמיחה הגבוהה ביותר ב-HR (גרטנר 2025). זו לא ירידה מהלמידה, זו העמדה של הלמידה בתוך מערכת שמודדים. אבל יש מחיר. אם היחידה מוגדרת כתחזוקה, שנתיים בה נראות בקורות חיים כ&quot;מנהל מערכות&quot;, לא כ&quot;מנהל שינוי&quot;.</p>
+<p><strong>תנאי יציאה שכדאי לקבוע מראש.</strong> אם אחרי שני רבעונים אין הסכם אחריות כתוב עם IT, אין תקציב לניהול שינוי, והבקשה הראשונה מההנהלה היא &quot;תוציאו לנו דוח&quot;, זה מנדט תחזוקה עם כותרת אחרת, ושווה להגיד את זה בקול.</p>
+<h3 id="s42">9.7 פרה מורטם. איך זה נכשל תוך 18 חודשים</h3>
+<p>שלושה סיפורי כישלון, נכתבים לפני התוכנית ולא אחריה. כל אחד עם סימני האזהרה המוקדמים ומה עושים היום.</p>
+<div class="pm"><div class="pmcard"><span class="n">01</span><b>&quot;היחידה שהפכה למוקד תמיכה&quot;.</b><p>שני הגיוסים הראשונים היו אנשי קונפיגורציה. תור הבקשות התמלא בחודש השלישי, האנליטיקה נדחתה &quot;לרבעון הבא&quot; שלוש פעמים, ובסוף השנה ההנהלה מדדה כרטיסים כי זה מה שהיה. הראיה, &quot;צוות HRIS קטן טובע בבקשות&quot; הוא הפוסט הכי מצוטט בקהילה. סימנים מוקדמים, אין תור שקוף, אין SLA, אין תפקיד intake. מה עושים היום, מגייסים איש דאטה בין השניים הראשונים וקובעים SLA לפני הכרטיס הראשון.</p></div><div class="pmcard"><span class="n">02</span><b>&quot;הפגישה עם כספים&quot;.</b><p>הדשבורד היה יפה. סמנכ&quot;ל הכספים הביא טבלה משלו, המספרים לא התיישבו, ומאותו רגע כל מספר של HR עבר &quot;אימות&quot; בכספים. הראיה, HR וכספים מגדירים מצבה אחרת ושניהם צודקים, והחרטה הכי נפוצה אחרי הטמעה היא הערכת חסר של ניקוי נתונים. סימנים מוקדמים, אין מילון הגדרות חתום, האנליטיקה רצה לפני ההתאמה. מה עושים היום, מילון הגדרות ראשון, דשבורד אחרון.</p></div><div class="pmcard"><span class="n">03</span><b>&quot;המנדט בלי הסמכות&quot;.</b><p>הכותרת הייתה טרנספורמציה, התקציב היה תחזוקה, והמערכת נשארה &quot;של IT&quot;. כל שחרור של הספק שבר משהו, אף אחד לא תקצב את הרגרסיה, וההנהלה שאלה למה AI עוד לא קרה. הראיה, רק 13% מההטמעות עולות על הציפיות, רק אחד מארבעה צוותי HR מרגיש מוכן לטרנספורמציה, ופונקציות דאטה שהוקמו לפני שהתנאים בשלים מפורקות מחדש. סימנים מוקדמים, אין הסכם אחריות עם IT, תקציב המערכת אצל מישהו אחר, אין שורת שחרורים בתקציב. מה עושים היום, ארבע השאלות מסעיף 8 לפני החתימה, לא אחריה.</p></div></div>
+<p>מה שמשותף לשלושתם. אף אחד מהם לא נכשל בגלל טכנולוגיה.</p>
+<h3 id="s43">9.8 מדריך ראיון לארבעה מנהלי HRIS ישראלים</h3>
+<p>הידע המקומי לא כתוב בשום מקום. ארבעה אנשים לפגוש, מנהל HRIS בבנק אחר, מנהל HRIS בחברת ביטוח, מישהו שמריץ ליבה גלובלית עם שכר מקומי, ואיש יישום מצד הספק או האינטגרטור. שנים עשר שאלות, ארבעים דקות.</p>
+<ol>
+<li>איך היחידה שלכם נולדה, ומה היה המשפט שהצדיק אותה בהנהלה.</li>
+<li>מי הבעלים של תקציב המערכות היום, ומי היה ביום הראשון.</li>
+<li>מה ההסכם עם IT, בכתב או בעל פה, ומה קורה כשהעדיפויות מתנגשות.</li>
+<li>איך אתם מתישבים עם כספים על המצבה, ומי חתום על ההגדרה.</li>
+<li>איך בנוי הממשק לשכר, כמה פעמים בשנה הוא נשבר, ומי מתקן.</li>
+<li>כמה זמן צוות הולך על שחרורי הספק בשנה, ומי בודק הרשאות אחרי כל שחרור.</li>
+<li>איך נראה תור הבקשות שלכם, ומה קרה כשלא היה.</li>
+<li>מה תיקון 13 שינה אצלכם בפועל, ומה הוראה 364 דרשה לפני ההתקשרות עם הספק.</li>
+<li>איזה AI כבר בייצור אצלכם, ומה נשאר בפיילוט ולמה.</li>
+<li>מה היה הגיוס הראשון שלכם, ומה היית עושה אחרת.</li>
+<li>מה שכנע את ההנהלה שהיחידה שווה את הכסף, ומתי זה קרה.</li>
+<li>אם היית מקבל את היחידה הזאת מחדש מחר, מה היית דורש לפני שאתה אומר כן.</li>
+</ol>
+<p>השאלה השתים עשרה היא החשובה. את השאר אפשר לדלג אם נגמר הזמן.</p>
+<hr>
+<h3 id="s44">9.9 מסגרת המדידה של היחידה. יעדים, מדדים, ואיך יודעים שהצלחנו</h3>
+<p>סעיף 9.5 נתן שלוש הבטחות. כאן המסגרת המלאה שמאחוריהן. הכלל שמארגן אותה, יחידה שמודדת את עצמה בכרטיסים תימדד בכרטיסים. לכן חמישה יעדים, ולכל יעד מדדים שמישהו מחוץ ליחידה יכול לאמת. יעדים מספריים מסומנים כמקור או כהצעה. הצעות נקבעות סופית אחרי רבעון של מדידת בסיס.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>יעד</th>
+<th>מה מודדים</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1. סומכים על המספרים</td>
+<td>דיוק, התאמה עם כספים, עדכניות, מקור אחד</td>
+</tr>
+<tr>
+<td>2. השירות עובד</td>
+<td>זמן תגובה, אימוץ, שביעות רצון, שחרורים בלי תקלות</td>
+</tr>
+<tr>
+<td>3. HR מקבל החלטות על דאטה</td>
+<td>החלטות שהוזנו, ערך כספי, מנהלים שמשתמשים</td>
+</tr>
+<tr>
+<td>4. סיכון וציות</td>
+<td>ביקורות הרשאות, DPO, הוראה 364, AI Act</td>
+</tr>
+<tr>
+<td>5. AI שמייצר ערך</td>
+<td>שימוש אמיתי, הסטה מכרטיסים, אג&#39;נטים תחת ממשל</td>
+</tr>
+</tbody></table></div>
+<div class="opts kpiwrap"><div class="stagefilter"><span>הצג לפי שלב</span><button class="on" data-stage="all">הכל</button><button data-stage="1">שלב 1</button><button data-stage="2">שלב 2</button><button data-stage="3">שלב 3</button></div><div class="tabbar kpi" role="tablist"><button role="tab" class="tab on" data-tab="goal1" aria-selected="true"><span>יעד 1</span><b>סומכים על המספרים</b></button><button role="tab" class="tab" data-tab="goal2" aria-selected="false"><span>יעד 2</span><b>השירות עובד</b></button><button role="tab" class="tab" data-tab="goal3" aria-selected="false"><span>יעד 3</span><b>HR מקבל החלטות על דאטה</b></button><button role="tab" class="tab" data-tab="goal4" aria-selected="false"><span>יעד 4</span><b>סיכון וציות</b></button><button role="tab" class="tab" data-tab="goal5" aria-selected="false"><span>יעד 5</span><b>AI שמייצר ערך</b></button></div><section class="panel on" id="goal1" role="tabpanel"><p><strong>יעד 1. סומכים על המספרים.</strong> התנאי לכל השאר.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>מדד</th>
+<th>הגדרה</th>
+<th>איך מודדים</th>
+<th>יעד</th>
+<th>קצב</th>
+<th>שלב</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>התאמת מצבה עם כספים</td>
+<td>פער בין מצבת HR למצבה המתוקצבת, לפי ההגדרה המשותפת</td>
+<td>ריצה חודשית של דוח אחד משתי המערכות</td>
+<td>אפס פערים לא מוסברים. הצעה, לא מקור</td>
+<td>חודשי</td>
+<td>1</td>
+</tr>
+<tr>
+<td>מילון הגדרות חתום</td>
+<td>מספר ההגדרות המוסכמות (מצבה, עובד פעיל, FTE, תחלופה, מנהל) שכספים ו-HR חתומים עליהן</td>
+<td>רשימה עם חתימות ותאריך</td>
+<td>5 הראשונות ברבעון 1, ISO 30414 מגדיר 14 מדדי בסיס עד סוף השנה. מקור</td>
+<td>רבעוני</td>
+<td>1</td>
+</tr>
+<tr>
+<td>דיוק רשומת העובד</td>
+<td>אחוז הרשומות בלי שדות חובה חסרים או סותרים בין HRIS לשכר</td>
+<td>בדיקה אוטומטית שבועית על שדות מוגדרים</td>
+<td>בסיס ברבעון 1, ואז יעד. לא נמצא סף מקובל בענף</td>
+<td>שבועי</td>
+<td>1</td>
+</tr>
+<tr>
+<td>זמן תיקון נתון שגוי</td>
+<td>ימי עבודה מדיווח על שגיאה עד תיקון במקור</td>
+<td>תור הבקשות</td>
+<td>SLA שנפרסם. הצעה, שלושה ימי עבודה</td>
+<td>חודשי</td>
+<td>1</td>
+</tr>
+<tr>
+<td>שיעור הזנות כפולות</td>
+<td>אחוז שינויי העובד שמוזנים ביותר ממערכת אחת ידנית</td>
+<td>דגימה רבעונית של תהליכים</td>
+<td>ירידה רבעון על רבעון. הצעה</td>
+<td>רבעוני</td>
+<td>1 עד 2</td>
+</tr>
+</tbody></table></div></section><section class="panel" id="goal2" role="tabpanel"><p><strong>יעד 2. השירות עובד.</strong> מה שהלקוחות הפנימיים מרגישים.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>מדד</th>
+<th>הגדרה</th>
+<th>איך מודדים</th>
+<th>יעד</th>
+<th>קצב</th>
+<th>שלב</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>זמן טיפול בבקשה</td>
+<td>חציון ימים מפתיחה לסגירה, לפי סוג</td>
+<td>תור הבקשות</td>
+<td>SLA לפי סוג, נפרסם. הצעה</td>
+<td>חודשי</td>
+<td>1</td>
+</tr>
+<tr>
+<td>שביעות רצון מקליטה</td>
+<td>סקר קצר לעובד חדש אחרי חודש</td>
+<td>סקר אוטומטי</td>
+<td>מעל 4.5 מתוך 5. מקור, GitLab</td>
+<td>חודשי</td>
+<td>1</td>
+</tr>
+<tr>
+<td>אימוץ שירות עצמי לעובדים</td>
+<td>אחוז העובדים שביצעו פעולה אחת לפחות ברבעון</td>
+<td>לוגים של המערכת</td>
+<td>בסיס ברבעון 1. הממוצע בענף כ-32%, נתון משני</td>
+<td>רבעוני</td>
+<td>1 עד 2</td>
+</tr>
+<tr>
+<td>אימוץ שירות עצמי למנהלים</td>
+<td>אחוז המנהלים שאישרו או צפו בצוות במערכת ברבעון</td>
+<td>לוגים</td>
+<td>בסיס, ואז יעד עולה. אין מדד בענף, וזו הסיבה שהוא נכשל</td>
+<td>רבעוני</td>
+<td>2</td>
+</tr>
+<tr>
+<td>שחרורי ספק בלי תקלות</td>
+<td>אחוז השחרורים שעברו רגרסיה בלי תקלה בייצור בשבועיים שאחרי</td>
+<td>רישום תקלות אחרי שחרור</td>
+<td>100% עם רגרסיה מתוכננת. הצעה</td>
+<td>לכל שחרור</td>
+<td>1</td>
+</tr>
+<tr>
+<td>ביקורת אימוץ ניהול שינוי</td>
+<td>האם 10% עד 15% מתקציב כל פרויקט הוקצו לאימוץ והדרכה</td>
+<td>בקרת תקציב</td>
+<td>כן בכל פרויקט. מקור, Prosci</td>
+<td>לכל פרויקט</td>
+<td>1</td>
+</tr>
+</tbody></table></div></section><section class="panel" id="goal3" role="tabpanel"><p><strong>יעד 3. HR מקבל החלטות על דאטה.</strong> מה שההנהלה רואה. זה היעד שמפריד יחידת אנליטיקה מיחידת דוחות.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>מדד</th>
+<th>הגדרה</th>
+<th>איך מודדים</th>
+<th>יעד</th>
+<th>קצב</th>
+<th>שלב</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>החלטות שהוזנו</td>
+<td>מספר ההחלטות המהותיות בהנהלה או בוועדות שהיחידה סיפקה להן ניתוח, עם שם ההחלטה</td>
+<td>רישום ידני, מאושר על ידי הלקוח</td>
+<td>אחת בחודש. הצעה, ברוח Insight222</td>
+<td>חודשי</td>
+<td>2</td>
+</tr>
+<tr>
+<td>ערך כספי מכומת</td>
+<td>מקרה אחד שבו הניתוח שינה תוצאה שאפשר לתרגם לכסף (שימור, איוש, שעות)</td>
+<td>מסמך מקרה שכספים מאשרים</td>
+<td>אחד בכל חצי שנה. הצעה</td>
+<td>חצי שנתי</td>
+<td>2</td>
+</tr>
+<tr>
+<td>מנהלים בכירים שצורכים דשבורד</td>
+<td>מספר חברי הנהלה ומנהלי אגפים שפתחו דשבורד ברבעון</td>
+<td>לוגים</td>
+<td>בסיס, ואז עולה</td>
+<td>רבעוני</td>
+<td>2</td>
+</tr>
+<tr>
+<td>דיווח לפי ISO 30414</td>
+<td>מספר מדדי הבסיס שמדווחים לפי התקן</td>
+<td>רשימת 14 המדדים</td>
+<td>14 עד סוף השנה. מקור</td>
+<td>רבעוני</td>
+<td>2</td>
+</tr>
+<tr>
+<td>יחס אנליטיקה לדוחות</td>
+<td>חלק זמן הצוות על ניתוח לעומת דוחות שגרה</td>
+<td>רישום זמן חודשי</td>
+<td>עולה רבעון על רבעון. הצעה</td>
+<td>רבעוני</td>
+<td>2</td>
+</tr>
+</tbody></table></div></section><section class="panel" id="goal4" role="tabpanel"><p><strong>יעד 4. סיכון וציות.</strong> בארגון מפוקח, זה מה שמאפשר לשאר להתקיים.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>מדד</th>
+<th>הגדרה</th>
+<th>איך מודדים</th>
+<th>יעד</th>
+<th>קצב</th>
+<th>שלב</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ביקורת הרשאות</td>
+<td>אחוז תפקידי ההרשאה שנבדקו אחרי כל שחרור ובביקורת שנתית</td>
+<td>רשימת בדיקה חתומה</td>
+<td>100%. מקור, GitLab</td>
+<td>לכל שחרור ושנתי</td>
+<td>1</td>
+</tr>
+<tr>
+<td>הערכת סיכוני ספק</td>
+<td>האם כל ספק ענן עבר הערכה לפני ההתקשרות ומחזורית אחריה</td>
+<td>רישום הערכות</td>
+<td>100%. מקור, הוראה 364</td>
+<td>שנתי</td>
+<td>1</td>
+</tr>
+<tr>
+<td>מלאי מערכות ו-AI</td>
+<td>מספר המערכות ומרכיבי ה-AI שנוגעים בנתוני עובדים, עם בעלים לכל אחד</td>
+<td>רשימה מתוחזקת</td>
+<td>רשימה מלאה ברבעון 1, ואז אפס מערכות בלי בעלים. הצעה</td>
+<td>רבעוני</td>
+<td>1</td>
+</tr>
+<tr>
+<td>בקשות פרטיות</td>
+<td>זמן מענה לבקשת עיון או תיקון של עובד</td>
+<td>רישום ה-DPO</td>
+<td>לפי חוק, ונפרסם</td>
+<td>רבעוני</td>
+<td>1</td>
+</tr>
+<tr>
+<td>מוכנות ל-AI Act</td>
+<td>אחוז מערכות ה-AI בסיכון גבוה (גיוס, הערכה, ניטור, קידום) עם הערכת סיכונים, בדיקת הטיה ואדם בלולאה</td>
+<td>רשימת בדיקה</td>
+<td>100% לפני 2 בדצמבר 2027. מקור</td>
+<td>חצי שנתי</td>
+<td>2</td>
+</tr>
+</tbody></table></div></section><section class="panel" id="goal5" role="tabpanel"><p><strong>יעד 5. AI שמייצר ערך.</strong> נמדד אחרון בכוונה. בלי יעדים 1 עד 4 המדדים כאן משקרים.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>מדד</th>
+<th>הגדרה</th>
+<th>איך מודדים</th>
+<th>יעד</th>
+<th>קצב</th>
+<th>שלב</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>הסטה מכרטיסים</td>
+<td>אחוז שאלות המדיניות שנענו על ידי אג&#39;נט בלי כרטיס</td>
+<td>לוגים של האג&#39;נט והתור</td>
+<td>בסיס, ואז עולה. אין נתון בלתי תלוי בענף</td>
+<td>חודשי</td>
+<td>1 עד 2</td>
+</tr>
+<tr>
+<td>דיוק תשובות האג&#39;נט</td>
+<td>אחוז תשובות שנדגמו ונמצאו נכונות על ידי איש HR</td>
+<td>דגימה שבועית</td>
+<td>מעל 95%. הצעה</td>
+<td>שבועי</td>
+<td>1 עד 2</td>
+</tr>
+<tr>
+<td>אנומליות שכר שנתפסו</td>
+<td>מספר שגיאות שזוהו לפני תשלום</td>
+<td>דוח הזיהוי מול תיקונים רטרואקטיביים</td>
+<td>ירידה בתיקונים רטרואקטיביים. הצעה</td>
+<td>חודשי</td>
+<td>1 עד 2</td>
+</tr>
+<tr>
+<td>אג&#39;נטים בייצור תחת ממשל</td>
+<td>מספר אג&#39;נטים בייצור שיש להם בעלים, בדיקה לפני ואחרי, ונקודת אדם בלולאה</td>
+<td>מלאי ה-AI</td>
+<td>100% מהאג&#39;נטים. הצעה</td>
+<td>רבעוני</td>
+<td>2 עד 3</td>
+</tr>
+<tr>
+<td>אמון העובדים ב-AI של HR</td>
+<td>אחוז העובדים שמסכימים שהארגון משתמש ב-AI בנתוני עובדים באחריות</td>
+<td>שאלה אחת בסקר העובדים</td>
+<td>בסיס, ואז עולה. הרף העולמי 27%, מחקר ספק</td>
+<td>שנתי</td>
+<td>2</td>
+</tr>
+</tbody></table></div></section></div>
+<p><strong>איך יודעים שהצלחנו, לפי שנים.</strong></p>
+<div class="timeline"><div class="tcard"><span class="dot"></span><b>רבעון 1</b><p>יש בסיס לכל מדד, יש מילון הגדרות עם חמש הגדרות חתומות, יש תור שקוף, יש הסכם אחריות כתוב עם IT, ויש שורת ניהול שינוי בתקציב</p></div><div class="tcard"><span class="dot"></span><b>סוף שנה 1</b><p>המצבה מתיישבת עם כספים בלי פערים לא מוסברים, 14 מדדי ISO מדווחים, שלושה שחרורים עברו בלי תקלה, ניצחון AI אחד בייצור בלי נתוני עובדים, ולפחות שש החלטות שהוזנו</p></div><div class="tcard"><span class="dot"></span><b>סוף שנה 2</b><p>ההנהלה מבקשת ניתוח לפני החלטה במקום אחרי, מקרה ערך כספי אחד שכספים אישרו, אימוץ מנהלים עולה שני רבעונים ברצף, וכל מערכות ה-AI בסיכון גבוה ממופות ותחת ממשל</p></div><div class="tcard"><span class="dot"></span><b>סוף שנה 3</b><p>היחידה מנוהלת כמוצר עם backlog ושלוש קדנציות, ההנהלה מודדת אותה לפי החלטות וערך ולא לפי כרטיסים, והשאלה &quot;למה יחידה&quot; כבר לא נשאלת</p></div></div>
+<p><strong>מה לא למדוד.</strong> מספר דוחות שהופקו, מספר כרטיסים שנסגרו כמדד ראשי, ומספר פיצ&#39;רים שהודלקו. שלושתם מודדים פעילות, והפונקציה שמדווחת על פעילות היא בדיוק זו שהמחקר מתאר כלא אפקטיבית.</p>
+<hr>
+<h2 id="s45">10. מה לא נמצא ומגבלות המחקר</h2>
+<ul>
+<li>שיח קהילתי. Reddit חסום לקריאת שרשורים מלאים בכל הנתיבים. הגעתי לרמת כותרות וקטעי הדגשה בלבד דרך חיפוש Firecrawl. Hacker News נגיש אבל כמעט ריק בנושאי HR ארגוני. X כמעט לא נגיש. הקהילה הישראלית ריקה לחלוטין בפלטפורמות פתוחות.</li>
+<li>אין נתון עדכני על גודל שוק ה-HR Tech הישראלי או על שיעורי אימוץ בישראל.</li>
+<li>אין מטריצת RACI מפורסמת שכוללת אבטחת מידע כצד נפרד.</li>
+<li>המלכודות הספציפיות למנהל היחידה (סעיף 7, החלק השני) לא גובו בשום מקור.</li>
+<li>נתוני Sapient על כישלון הטמעות הם ממהדורת 2023–2024. מהדורת 2025–2026 קיימת (381 עמודים, 1,800 דולר) ולא נשלפה.</li>
+<li>ארכיטקטורת &quot;ליבה גלובלית ועוד שכר מקומי&quot; מגובה רק בתוכן שיווקי של חילן.</li>
+<li>לא נמצא מקרה מתועד של צוות People Analytics שפורק.</li>
+<li>בסבב המשלים, מחירי רישיון ומכפילי יישום נמצאו רק באתרי השוואה סותרים, ולכן לא צוטטו. אין נתון על עלות שירותים מנוהלים ובדיקות רגרסיה חוזרות. אין סף מספרי מקובל לאיכות נתוני HR. אין מקרה HR מתועד של יחידה שפורקה (המקרה הקרוב הוא צוות דאטה בניו יורק טיימס). אין הוכחה בלתי תלויה ברמת תוצאה לכך שעיצוב &quot;ברמת צרכן&quot; של חוויית העובד העלה שביעות רצון.</li>
+</ul>
+<hr>
+<h2 id="s46">מקורות</h2>
+<p>רמת ביטחון. גבוה = אומת מול שני מקורות בלתי תלויים לפחות. בינוני = מקור יחיד אמין. נמוך = צבע בלבד.</p>
+<h3 id="s47">סמכותיים ורגולטוריים</h3>
+<ul>
+<li><a href="https://www.gartner.com/en/newsroom/press-releases/2025-08-17-gartner-says-shared-chro-cio-ownership-is-critical-for-ai-transformation">Gartner, Shared CHRO-CIO Ownership Is Critical for AI Transformation</a>, 17.8.2025, גבוה</li>
+<li><a href="https://www.gartner.com/en/articles/hr-operating-model">Gartner, The Future of AI in HR, Reinventing the Operating Model</a>, 2025/26, בינוני</li>
+<li><a href="https://www.deloitte.com/us/en/insights/topics/talent/human-capital-trends.html">Deloitte, 2026 Global Human Capital Trends</a>, 2026, גבוה</li>
+<li><a href="https://www.deloitte.com/in/en/about/press-room/people-analytics-maturity-.html">Deloitte, People Analytics Maturity</a>, 2024, בינוני</li>
+<li><a href="https://www.myhrfuture.com/blog/insight222-people-analytics-trends-2025/26-navigating-ai-and-people-analytics-from-ambition-to-action">Insight222, People Analytics Trends 2025/26 (סיכום myHRfuture)</a>, נובמבר 2025, גבוה</li>
+<li><a href="https://www.myhrfuture.com/blog/2021/8/29/what-is-the-optimum-people-analytics-team-size">Insight222, What Is the Optimum People Analytics Team Size</a>, 2022, בינוני (מגמה היסטורית)</li>
+<li><a href="https://sapientinsights.com/sapient-insights-group-releases-the-2025-2026-hr-systems-survey-report/">Sapient Insights Group, 2025–2026 HR Systems Survey Report (הודעה)</a>, 19.11.2025, גבוה</li>
+<li><a href="https://www.shrm.org/topics-tools/news/hr-magazine/many-new-hr-technology-implementations-fail">SHRM, Why Do So Many New HR Technology Implementations Fail</a>, מאי 2024, גבוה</li>
+<li><a href="https://www.shrm.org/topics-tools/news/technology/how-to-sidestep-pitfalls-in-hr-tech-implementations">SHRM, How to Sidestep Pitfalls in HR Tech Implementations</a>, 2024, בינוני</li>
+<li><a href="https://www.shrm.org/content/dam/en/shrm/research/2023-2024-State-of-the-Workplace-Report.pdf">SHRM, State of the Workplace Report</a>, 2025, בינוני</li>
+<li><a href="https://www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/how-to-be-great-at-people-analytics">McKinsey, How to Be Great at People Analytics</a>, בינוני (ממצא איכותי בלבד)</li>
+<li><a href="https://www.execulead.co.il/post/%D7%9E%D7%A9%D7%90%D7%91%D7%99-%D7%90%D7%A0%D7%95%D7%A9-2025-%D7%97%D7%9E%D7%99%D7%A9%D7%94-%D7%9E%D7%94%D7%9C%D7%9B%D7%99%D7%9D-%D7%90%D7%A1%D7%98%D7%A8%D7%98%D7%92%D7%99%D7%99%D7%9D-%D7%A9%D7%9B%D7%9C-%D7%90%D7%A8%D7%92%D7%95%D7%9F-%D7%97%D7%99%D7%99%D7%91-%D7%9C%D7%94%D7%95%D7%91%D7%99%D7%9C-%D7%9E%D7%90%D7%AA-%D7%9C%D7%91%D7%A0%D7%AA-%D7%A7%D7%99%D7%96%D7%A0%D7%A8">McKinsey HR Monitor 2025, סיכום עברי (Execulead)</a>, אוקטובר 2025, בינוני (משני)</li>
+<li><a href="https://joshbersin.com/hr2030/">Josh Bersin, HR 2030</a>, 2026, גבוה</li>
+<li><a href="https://joshbersin.com/2025/10/sap-jumps-ahead-in-ai-agents-with-joule-hcm-features-and-more/">Josh Bersin, SAP Jumps Ahead in AI Agents</a>, אוקטובר 2025, גבוה</li>
+<li><a href="https://joshbersin.com/2023/12/introducing-the-systemic-hr-initiative/">Josh Bersin, Introducing the Systemic HR Initiative</a>, דצמבר 2023, בינוני</li>
+<li><a href="https://newsroom.workday.com/2025-09-16-Workday-Illuminate-TM-Expands-with-New-AI-Agents-for-HR,-Finance,-and-Industry">Workday Newsroom, Illuminate Expands with New AI Agents</a>, 16.9.2025, גבוה לקיום, נמוך למספרים</li>
+<li><a href="https://www.workday.com/en-us/topics/hr/hris.html">Workday, What Is an HRIS</a>, בינוני</li>
+<li><a href="https://handbook.gitlab.com/job-families/people-group/people-systems-and-analytics/">GitLab Handbook, People Technology and Analytics job family</a>, חי, גבוה</li>
+<li><a href="https://www.pave.com/blog-posts/hr-to-employee-ratio-benchmark">Pave, HR to Employee Ratio Benchmarks</a>, 2025/26, בינוני</li>
+<li><a href="https://www.gibsondunn.com/eu-ai-act-omnibus-agreement-postponed-high-risk-deadlines-and-other-key-changes/">Gibson Dunn, EU AI Act Omnibus Agreement Postpones High-Risk Deadlines</a>, 2026, גבוה</li>
+<li><a href="https://knowledge.dlapiper.com/dlapiperknowledge/globalemploymentlatestdevelopments/2026/The-Digital-AI-Omnibus-Proposed-deferral-of-high-risk-AI-obligations-under-the-AI-Act">DLA Piper, The Digital AI Omnibus</a>, 2026, גבוה</li>
+<li><a href="https://www.osc.ny.gov/state-agencies/audits/2025/12/02/enforcement-local-law-144-automated-employment-decision-tools">NY State Comptroller, Enforcement of Local Law 144</a>, 2.12.2025, גבוה</li>
+<li><a href="https://barlaw.co.il/practice_areas/high-tech/cyber/client_updates/a-practical-guide-to-board-responsibility-and-dpo-appointment-under-amendment-13/">ברנע ג&#39;פה לנדה, מדריך לאחריות דירקטוריון ומינוי DPO לפי תיקון 13</a>, 28.7.2025, גבוה</li>
+<li><a href="https://inplp.com/latest-news/article/new-amendment-to-israeli-privacy-protection-law-and-mandatory-dpo-appointment/">INPLP, New Amendment to Israeli Privacy Protection Law and Mandatory DPO</a>, 2025, גבוה</li>
+<li><a href="https://www.lexology.com/library/detail.aspx?g=70cfbe1d-0f58-42fd-b52f-c57b4412be09">Lexology, Amendment 13 employment angle</a>, 2025, בינוני</li>
+<li><a href="https://www.pearlcohen.com/bank-of-israel-issues-proper-conduct-of-banking-business-directive-on-cybersecurity/">Pearl Cohen, Bank of Israel Directive 364</a>, דצמבר 2024, גבוה</li>
+<li><a href="https://www.law.co.il/en/news/2024/12/02/bank-israel-issues-proper-conduct-banking-business-directive/">law.co.il, Bank of Israel Issues Directive 364</a>, 2.12.2024, גבוה</li>
+<li><a href="https://www.boi.org.il/en/economic-roles/supervision-and-regulation/proper_conduct/">בנק ישראל, הוראות ניהול בנקאי תקין</a>, חי, גבוה</li>
+<li><a href="https://www.histadrut.org.il/news/%D7%94%D7%98%D7%91%D7%95%D7%AA-%D7%94%D7%9E%D7%99%D7%9C%D7%95%D7%90%D7%99%D7%9D-%D7%94%D7%95%D7%A4%D7%9B%D7%95%D7%AA-%D7%9C%D7%A7%D7%91%D7%95%D7%A2%D7%95%D7%AA-%D7%94%D7%92%D7%A0%D7%94-%D7%9E%D7%A4/">ההסתדרות, הטבות המילואים הופכות לקבועות</a>, 2025/26, בינוני</li>
+<li><a href="https://en.wikipedia.org/wiki/HiBob">HiBob (ויקיפדיה, שווי מעודכן ספטמבר 2026)</a>, גבוה</li>
+<li><a href="https://www.calcalistech.com/ctech/articles/0,7340,L-3919534,00.html">CTech, HiBob acquires Pento</a>, 2024, גבוה</li>
+</ul>
+<h3 id="s48">מקצועיים</h3>
+<ul>
+<li><a href="https://www.aihr.com/blog/human-resources-information-system-hris/">AIHR, HRIS 101</a>, 2026, בינוני</li>
+<li><a href="https://www.aihr.com/blog/hris-analyst/">AIHR, The HRIS Analyst</a>, בינוני</li>
+<li><a href="https://www.aihr.com/blog/who-does-hr-report-to/">AIHR, Who Does HR Report To</a>, בינוני (HR כללי)</li>
+<li><a href="https://www.aihr.com/blog/hr-analytics-maturity/">AIHR, HR Analytics Maturity</a>, בינוני</li>
+<li><a href="https://www.aihr.com/blog/types-of-hr-operating-models/">AIHR, Types of HR Operating Models</a>, בינוני</li>
+<li><a href="https://umbrex.com/resources/frameworks/organization-frameworks/ulrich-hr-business-partner-model/">Umbrex, Ulrich HR Business Partner Model</a>, גבוה (מסגרת מבוססת)</li>
+<li><a href="https://technologyadvice.com/human-resources-software/resources/hris-roles/">TechnologyAdvice, HRIS Roles</a>, נמוך עד בינוני</li>
+<li><a href="https://ttcglobal.com/what-we-think/blog/what-nobody-tells-you-about-sap-successfactors-testing">TTC Global, What Nobody Tells You About SAP SuccessFactors Testing</a>, 8.6.2026, בינוני עד גבוה</li>
+<li><a href="https://www.outsail.co/post/navigating-the-complexity-of-data-migration-in-hris-implementation">Outsail, Data Migration in HRIS Implementation</a>, בינוני (חלק מהתכנסות של חמישה ספקים)</li>
+<li><a href="https://www.alteryx.com/blog/how-much-time-are-analysts-wasting-on-data-preparation">Alteryx על סקר dbt Labs, זמן הכנת נתונים</a>, 2024/25, בינוני (לא HR)</li>
+<li><a href="https://hrexecutive.com/from-copilots-to-superagents-hrs-2026-shift/">HR Executive, From Copilots to Superagents</a>, 2026, בינוני</li>
+<li><a href="https://www.hilan.co.il/%D7%9E%D7%A8%D7%9B%D7%96-%D7%99%D7%93%D7%A2/%D7%91%D7%A1%D7%99%D7%A1-%D7%99%D7%93%D7%A2/%D7%9E%D7%90%D7%9E%D7%A8%D7%99%D7%9D/%D7%9E-%D7%A9%D7%95%D7%A7-%D7%9C-%D7%9E%D7%9E%D7%A9%D7%A7/">חילן, הצורך בממשק בין מערכת ה-HR למערכת השכר</a>, בינוני (ספק)</li>
+<li><a href="https://www.malam-payroll.com/%D7%AA%D7%99%D7%A7%D7%95%D7%9F-13-%D7%9C%D7%97%D7%95%D7%A7-%D7%94%D7%92%D7%A0%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%95%D7%AA-%D7%9E%D7%95%D7%A8%D7%94-%D7%A0%D7%91%D7%95%D7%9B%D7%99%D7%9D/">מלם שכר, תיקון 13 למעסיקים</a>, 2025, בינוני</li>
+<li><a href="https://www.malam-payroll.com/wp-content/uploads/2024/12/11-2024-rights-reservists.pdf">מלם שכר, זכויות משרתי מילואים (PDF)</a>, נובמבר 2024, בינוני</li>
+<li><a href="https://www.hrportal.co.il/israel-hr-tech/">HR Portal, מפת ה-HR Tech הישראלי</a>, ינואר 2018, נמוך (ישן)</li>
+</ul>
+<h3 id="s49">קהילה</h3>
+<ul>
+<li><a href="https://www.reddit.com/r/workday/comments/1n8hycn/small_hris_team_drowning_in_workday_requests_how/">r/workday, Small HRIS team drowning in Workday requests</a>, 2025, בינוני (כותרת והדגשה בלבד)</li>
+<li><a href="https://www.reddit.com/r/workday/comments/1qp30g1/how_is_your_hris_team_organized/">r/workday, How is your HRIS team organized</a>, 2026, בינוני</li>
+<li><a href="https://www.reddit.com/r/humanresources/comments/1tr484f/what_hris_are_you_using_what_do_you_love_or_hate/">r/humanresources, What HRIS are you using, what do you love or hate</a>, 2026, בינוני</li>
+<li><a href="https://www.reddit.com/r/humanresources/comments/1f6gfhe/people_analytics_in_your_organization_na/">r/humanresources, People analytics in your organization</a>, 2024, בינוני</li>
+<li><a href="https://www.reddit.com/r/humanresources/comments/1o5z4bc/career_shift_from_recruiting_to_hr_analytics_na/">r/humanresources, Career shift from Recruiting to HR Analytics</a>, 2025, בינוני</li>
+<li><a href="https://community.sap.com/t5/enterprise-resource-planning-q-a/managing-regression-testing-for-release-upgrades-across-s4hc-and/qaq-p/12375087">SAP Community, Managing regression testing for release upgrades</a>, בינוני</li>
+<li><a href="https://dev.to/johnste39558689/workday-regression-testing-why-it-matters-52ib">dev.to, Workday Regression Testing, Why It Matters</a>, 2026, בינוני</li>
+<li><a href="https://news.ycombinator.com/item?id=26495816">Hacker News, Workday as HR system of record (תגובה)</a>, 2021, נמוך (ישן)</li>
+<li><a href="https://news.ycombinator.com/item?id=26485737">Hacker News, Workday and agents (תגובות)</a>, 2025/26, נמוך</li>
+<li><a href="https://x.com/thenewstack/status/2055339981355233477">X, The New Stack על SAP AI Agent Hub</a>, 2026, נמוך</li>
+</ul>
+<h3 id="s50">הסבב המשלים (סעיף 9)</h3>
+<ul>
+<li><a href="https://www.gartner.com/en/newsroom/press-releases/2025-10-02-gartner-says-chros-top-priorities-for-2026-center-around-realizing-ai-value-and-driving-performance-amid-uncertainty">Gartner, CHROs&#39; Top Priorities for 2026</a>, 2.10.2025, גבוה</li>
+<li><a href="https://www.gartner.com/en/human-resources/trends/top-priorities-for-hr-leaders">Gartner, Top Priorities for HR Leaders 2026 (426 CHROs)</a>, 2025/26, גבוה</li>
+<li><a href="https://www.i4cp.com/press-news/i4cp-releases-2026-priorities-predictions">i4cp, 2026 Priorities and Predictions</a>, 3.12.2025, גבוה</li>
+<li><a href="https://www.pwc.com/us/en/library/pulse-survey/finding-opportunity-in-business-reinvention/chro.html">PwC Pulse Survey, CHRO findings</a>, מאי 2025, גבוה</li>
+<li><a href="https://www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/hr-monitor-2025">McKinsey, HR Monitor 2025</a>, יוני 2025, גבוה</li>
+<li><a href="https://dc.fortune.com/2025/05/08/why-chros-have-reputation-being-least-ai-savvy-c-suite-gartner-research">Fortune, CHROs have a reputation as the least AI-savvy C-suite (Gartner)</a>, 8.5.2025, בינוני</li>
+<li><a href="https://fortune.com/2024/11/05/cpo-lattice-says-chros-rethink-ceo-relationships-alignment-agreement">Fortune, CPO of Lattice on CHRO and CEO relationships</a>, 5.11.2024, בינוני</li>
+<li><a href="https://www.hrdive.com/news/chro-confidence-levels-strongest-tracked-the-conference-board/818654/">HR Dive, CHRO Confidence Index Q1 2026 (Conference Board)</a>, 28.4.2026, בינוני</li>
+<li><a href="https://www.gartner.com/en/newsroom/press-releases/2026-04-29-gartner-hr-survey-finds-47-percent-of-managers-say-they-are-working-harder-than-1-year-ago">Gartner, 47% of managers working harder than a year ago</a>, 29.4.2026, גבוה</li>
+<li><a href="https://www.gartner.com/en/newsroom/press-releases/2025-07-31-gartner-survey-shows-just-26-percent-of-job-applicants-trust-ai-will-fairly-evaluate-them">Gartner, only 26% of job applicants trust AI to evaluate them fairly</a>, 31.7.2025, גבוה</li>
+<li><a href="https://techcommunity.microsoft.com/blog/microsoftvivablog/5-insights-from-the-josh-bersin-x-microsoft-report-employee-experience-platforms/4376239">Microsoft, 5 insights from the Josh Bersin x Microsoft EX platforms report</a>, 2025, בינוני (בחסות ספק)</li>
+<li><a href="https://www.techtarget.com/searchhrsoftware/feature/Josh-Bersin-on-employee-experience-fighting-HR-tech-overload">TechTarget, Josh Bersin on employee experience and HR tech overload</a>, 2025, בינוני</li>
+<li><a href="https://www.researchgate.net/publication/392932078_Antecedents_of_the_actual_usage_of_HRIS_by_employees_in_WFH_and_hybrid_contexts_Integration_of_DIT_TAM_and_UTAUT">Antecedents of actual HRIS usage in WFH and hybrid contexts (TAM, UTAUT)</a>, 2025, בינוני (אקדמי, מדגם קטן)</li>
+<li><a href="https://www.outsail.co/post/manager-self-service-in-hris-reduce-administrative-burden">Outsail, Manager self-service in HRIS</a>, 2025/26, בינוני</li>
+<li><a href="https://theptsteam.com/manager-self-service-hcm-low-adoption-cost/">The PTS Team, Manager self-service low adoption cost</a>, 2025/26, בינוני</li>
+<li><a href="https://www.deloitte.com/global/en/services/consulting/analysis/the-people-product-operating-model.html">Deloitte, The People Product Operating Model</a>, גבוה</li>
+<li><a href="https://www.deloitte.com/global/en/about/press-room/deloitte-launches-outcome-focused-industry-specific-workday-accelerators-across-banking-health-care-higher-education-and-technology-and-media.html">Deloitte, Workday Accelerators for banking and other industries</a>, בינוני (הודעה לעיתונות)</li>
+<li><a href="https://www.gartner.com/en/human-resources/trends/using-shared-services-to-drive-the-hr-operating-model-of-the-future">Gartner, Using shared services to drive the HR operating model of the future</a>, בינוני</li>
+<li><a href="https://www.aihr.com/blog/people-analytics-operating-models/">AIHR, People analytics operating models</a>, בינוני</li>
+<li><a href="https://www.montecarlodata.com/blog-data-center-of-excellence/">Monte Carlo, Return of the data center of excellence (NYT case)</a>, בינוני</li>
+<li><a href="https://sapientinsights.com/downloads/28th-annual-2025-2026-hr-systems-survey-key-findings/">Sapient Insights, 2025–2026 HR Systems Survey key findings</a>, נובמבר 2025, גבוה</li>
+<li><a href="https://www.gartner.com/en/human-resources/trends/budget-and-investment-trends">Gartner, HR budget and investment trends</a>, 2024/25, בינוני</li>
+<li><a href="https://www.prosci.com/blog/how-to-budget-for-change-management">Prosci, How to budget for change management</a>, בינוני (ספק, מחקר מצוטט)</li>
+<li><a href="https://www.iso.org/standard/30414">ISO 30414:2025, Human capital reporting</a>, 2025, גבוה</li>
+<li><a href="https://handbook.gitlab.com/handbook/people-group/people-success-performance-indicators/">GitLab Handbook, People Success performance indicators</a>, חי, גבוה</li>
+<li><a href="https://publications.insight222.com/peopleanalyticstrends2024">Insight222, People Analytics Trends 2024</a>, 2024, בינוני</li>
+<li><a href="https://www.aihr.com/blog/hr-data-management/">AIHR, HR data management</a>, בינוני</li>
+<li><a href="https://danel-jobs.co.il/%D7%98%D7%91%D7%9C%D7%90%D7%95%D7%AA-%D7%A9%D7%9B%D7%A8/">דנאל משאבי אנוש, טבלאות שכר</a>, 2025, נמוך (מקור יחיד)</li>
+<li><a href="https://hn.algolia.com/api/v1/search?query=Workday%20HR%20software&amp;tags=comment">Hacker News, Workday dominates despite poor UX (תגובות)</a>, 2024 ו-2026, נמוך</li>
+</ul>
+<h3 id="s51">לא לצטט. מספרים שנפלו בבדיקה, ולמה</h3>
+<p>במהלך המחקר צצו מספרים שנראים מצוינים למצגת, ובבדיקה מול המקור הראשוני התברר שאין מאחוריהם מחקר, או שהם ישנים, או שהם טענת ספק. הם לא מופיעים בגוף המסמך כעובדות. הרשימה כאן כדי שלא אצטט אותם בטעות בפני הנהלה, וכדי שאדע להגיד למה כשמישהו אחר מצטט.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>המספר</th>
+<th>מה הבעיה</th>
+<th>מה לומר במקום</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;ארגונים עם אנליטיקה בוגרת מקבלים החלטות פי 5 מהר יותר, מצליחים פי 3.2, ומחזירים פי 5.4 עד 8.7 על ההשקעה&quot; בשם McKinsey</td>
+<td>כל הציטוטים מובילים לאתר אגרגציה אחד של &quot;סטטיסטיקות HR&quot;. לא נמצא בשום פרסום של McKinsey</td>
+<td>52% מהארגונים מדווחים על שיפור עסקי מדיד (Insight222, 370 ארגונים)</td>
+</tr>
+<tr>
+<td>&quot;80% מזמן האנליסט הולך על ניקוי נתונים&quot;</td>
+<td>פולקלור. גרסה של טענה ישנה על מדעני נתונים שגם היא הופרכה. אין מחקר HR שמדד את זה</td>
+<td>57% מהאנליסטים מציינים איכות נתונים כבעיה הכי נפוצה (dbt Labs 2024, לא ספציפי ל-HR)</td>
+</tr>
+<tr>
+<td>&quot;55% עד 75% מפרויקטי ERP נכשלים&quot; בשם גרטנר</td>
+<td>לא ניתן לאיתור בשום מסמך של גרטנר. כנראה ערבוב עם דוחות Standish או Panorama</td>
+<td>13% מההטמעות עולות על הציפיות, רבע מפספסות לוח זמנים (Sapient דרך SHRM)</td>
+</tr>
+<tr>
+<td>&quot;40% פחות זמן טיפול, 85% קליטה מהירה יותר, 60% פחות שגיאות&quot; של Workday, &quot;50% עד 60% מהחברות הגדולות ישתמשו ב-AI בשכר&quot;</td>
+<td>טענות ספק או אגרגטור בלי מתודולוגיה, מדגם או תאריך</td>
+<td>הקיום של האג&#39;נטים מאומת, התועלת עוד לא נמדדה באופן בלתי תלוי</td>
+</tr>
+<tr>
+<td>&quot;78% מצוותי האנליטיקה כוללים תפקיד מתרגם&quot;</td>
+<td>מופיע במאמר של myHRfuture בלי סקר, שנה או מדגם</td>
+<td>תפקיד המתרגם נזכר שוב ושוב כנקודת כשל כשהוא חסר (McKinsey, איכותי)</td>
+</tr>
+<tr>
+<td>שווי HiBob 2.7 מיליארד דולר</td>
+<td>ישן. בספטמבר 2026 גייסה לפי שווי 3.2 מיליארד</td>
+<td>3.2 מיליארד</td>
+</tr>
+<tr>
+<td>&quot;גרטנר, ארגונים מפסידים 12.9 מיליון דולר בשנה מאיכות נתונים גרועה&quot; כנתון עדכני</td>
+<td>אמיתי אבל מ-2020, ומדגם של 154 רוכשי כלי איכות נתונים שדיווחו על עצמם</td>
+<td>אפשר לצטט רק עם השנה והמדגם</td>
+</tr>
+</tbody></table></div>
+<hr>
+<p><em>מחקר מאומת, 23.9.2026. עשר עדשות חקירה בשני סבבים, בדיקת עובדות אדוורסרית, שני סבבי השלמה. הארטיפקטים המלאים (מקורות לפי עדשה, טבלת ניקוד, רשימת &quot;לא לצטט&quot;) נשמרו בזמן הריצה. המקורות ששרדו נרשמו ב-[[📇 Source Ledger]].</em></p>
+
+  </article></main>
+  <div class="tocwrap">
+    <nav class="toc" id="toc"><div class="t">תוכן</div><a class="l2" href="#s1">אמל״ק</a><a class="l2" href="#s2">תובנות מפתח, הלא צפויות קודם</a><a class="l2" href="#s3">1. מה זה HRIS ומה היחידה עושה</a><a class="l2" href="#s7">2. איך זה מיושם בעולם</a><a class="l2" href="#s12">3. איך זה נראה בישראל</a><a class="l2" href="#s17">4. משקל פונקציית הדאטה ביחידה</a><a class="l2" href="#s22">5. שלוש אופציות מבנה, מתפתחות</a><a class="l2" href="#s27">6. עידן ה-AI. איך יוצרים ערך אמיתי ולא הדגמה</a><a class="l2" href="#s32">7. נקודות עיוורות למי שמגיע מעולם הלמידה</a><a class="l2" href="#s34">8. שורה תחתונה. מה לעשות לפני שאומרים כן</a><a class="l2" href="#s35">9. שאלות שהמסמך לא שאל בגרסה הראשונה</a><a class="l2" href="#s45">10. מה לא נמצא ומגבלות המחקר</a><a class="l2" href="#s46">מקורות</a></nav>
+    <button class="tocbtn" id="tocbtn" aria-controls="toc" aria-expanded="false">תוכן ☰</button>
+  </div>
+</div>
+<footer>נכתב עם צינור המחקר המאומת של אבי לוי. המקורות ששרדו את בדיקת העובדות מופיעים בסוף הדף עם קישור, תאריך ורמת ביטחון.</footer>
+<script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+mermaid.initialize({ startOnLoad:true, theme: dark ? "dark" : "neutral", flowchart:{ htmlLabels:true, curve:"basis" } });
+const links=[...document.querySelectorAll("nav.toc a")], heads=links.map(a=>document.querySelector(a.getAttribute("href")));
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove("on"));const i=heads.indexOf(e.target);if(i>-1){links[i].classList.add("on");}}})},{rootMargin:"-8% 0px -82% 0px"});
+heads.forEach(h=>h&&io.observe(h));
+const bar=document.getElementById("bar");
+addEventListener("scroll",()=>{const d=document.documentElement;bar.style.transform=`scaleX(${d.scrollTop/(d.scrollHeight-d.clientHeight)})`;},{passive:true});
+
+// tabs
+document.querySelectorAll(".opts").forEach(w=>{
+  const tabs=[...w.querySelectorAll(":scope > .tabbar .tab")], panels=[...w.querySelectorAll(":scope > .panel")];
+  tabs.forEach(t=>t.addEventListener("click",()=>{tabs.forEach(x=>{x.classList.remove("on");x.setAttribute("aria-selected","false")});panels.forEach(p=>p.classList.remove("on"));t.classList.add("on");t.setAttribute("aria-selected","true");w.querySelector("#"+t.dataset.tab).classList.add("on");}));
+});
+// stepper → open option tab
+document.querySelectorAll(".step").forEach(b=>b.addEventListener("click",()=>{const t=document.querySelector(`.tab[data-tab="${b.dataset.go}"]`);t.click();t.scrollIntoView({behavior:"smooth",block:"start"});}));
+// calculator
+const r=document.getElementById("orgsize");
+if(r){const f=n=>n.toLocaleString("en-US");const upd=()=>{const n=+r.value;document.getElementById("orgout").value=f(n);document.getElementById("c1").textContent=Math.max(1,Math.round(n/4800));document.getElementById("c2").textContent=Math.max(1,Math.round(n/2700));document.getElementById("c3").textContent=Math.max(1,Math.round(n/2500));};r.addEventListener("input",upd);upd();}
+// stage filter
+document.querySelectorAll(".stagefilter button").forEach(b=>b.addEventListener("click",()=>{
+  const w=b.closest(".kpiwrap");w.querySelectorAll(".stagefilter button").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+  const st=b.dataset.stage;w.querySelectorAll("tbody tr").forEach(tr=>{const last=tr.lastElementChild.textContent;tr.classList.toggle("dim",st!=="all"&&!last.includes(st));});
+}));
+
+const btn=document.getElementById("tocbtn"),toc=document.getElementById("toc");
+btn.addEventListener("click",()=>{const o=toc.classList.toggle("open");btn.setAttribute("aria-expanded",o);});
+toc.addEventListener("click",e=>{if(e.target.tagName==="A")toc.classList.remove("open");});
+</script>
+</body>
+</html>
